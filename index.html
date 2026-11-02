@@ -301,7 +301,7 @@
           <!-- BẢNG DANH SÁCH BẠN BÈ ĐÃ THAM GIA & ĐIỂM SỐ -->
           <div class="mt-8 pt-5 border-t border-white/20 text-left">
             <div class="flex items-center justify-between mb-3">
-              <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2 text-glow">
+              <h3 id="leaderboardTitleWelcome" class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2 text-glow">
                 <span>🏆</span> Bảng thành tích bạn bè đã tham gia:
               </h3>
               <span id="leaderboardCountBadge" class="text-xs bg-pink-500/30 text-pink-100 font-bold px-2.5 py-0.5 rounded-full border border-pink-300/40 text-glow">
@@ -593,7 +593,7 @@
         <input 
           type="password" 
           id="ownerPasswordInput" 
-          placeholder="Mật khẩu mặc định: 123456" 
+          placeholder="Nhập mật khẩu chủ nhân..." 
           class="glass-input-field w-full px-3 py-2.5 rounded-lg text-sm text-center font-bold tracking-widest outline-none"
           maxlength="30"
           onkeydown="if(event.key === 'Enter') verifyOwnerPassword();"
@@ -617,10 +617,6 @@
           Huỷ
         </button>
       </div>
-      
-      <p class="text-[11px] text-slate-300 mt-3 font-medium">
-        💡 Mật khẩu mặc định: <span class="font-bold text-pink-300">123456</span>
-      </p>
     </div>
   </div>
 
@@ -719,6 +715,7 @@
 
     /* Quay trở lại sảnh chính (Trang bắt đầu thử thách) */
     function backToLobby() {
+      if (typeof autoNextTimeout !== 'undefined') clearTimeout(autoNextTimeout);
       currentQuestionIndex = 0;
       playerAnswers = [];
       isGuestCreatorMode = false;
@@ -1071,17 +1068,50 @@
       }
     }
 
-    /* Quản lý danh sách thành tích người chơi */
+    /* ==============================================================
+       QUẢN LÝ BẢNG XẾP HẠNG THÀNH TÍCH THEO TỪNG BỘ CÂU HỎI RIÊNG BIỆT
+       (Bài của Tâm lưu riêng, bài của Ngân lưu riêng, không bị lẫn lộn)
+    =============================================================== */
+    function getActiveQuizKey() {
+      if (!activeQuizData) return "tam_master";
+      const host = (activeQuizData.creator || "Mai Tâm").trim().toLowerCase();
+      const hash = window.location.hash;
+      if (hash && hash.includes('quiz=')) {
+        const questionsSig = (activeQuizData.questions || [])
+          .map(q => (q.question || '').trim().substring(0, 15))
+          .join('|');
+        let hashVal = 0;
+        for (let i = 0; i < questionsSig.length; i++) {
+          hashVal = ((hashVal << 5) - hashVal) + questionsSig.charCodeAt(i);
+          hashVal |= 0;
+        }
+        return `quiz_${encodeURIComponent(host)}_${Math.abs(hashVal)}`;
+      }
+      return "tam_master";
+    }
+
+    function getLeaderboardStorageKey() {
+      const qKey = getActiveQuizKey();
+      return `friendship_quiz_leaderboard_${qKey}`;
+    }
+
     function getLeaderboard() {
       try {
-        const raw = localStorage.getItem(STORAGE_KEY_LEADERBOARD);
-        return raw ? JSON.parse(raw) : [];
+        const key = getLeaderboardStorageKey();
+        const raw = localStorage.getItem(key);
+        if (raw) return JSON.parse(raw);
+        if (getActiveQuizKey() === "tam_master") {
+          const oldRaw = localStorage.getItem("friendship_quiz_leaderboard_history");
+          if (oldRaw) return JSON.parse(oldRaw);
+        }
+        return [];
       } catch (e) {
         return [];
       }
     }
 
     function saveScoreToLeaderboard(pName, score, total, percent) {
+      const key = getLeaderboardStorageKey();
       const list = getLeaderboard();
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
@@ -1097,22 +1127,34 @@
 
       if (list.length > 50) list.pop();
 
-      localStorage.setItem(STORAGE_KEY_LEADERBOARD, JSON.stringify(list));
+      localStorage.setItem(key, JSON.stringify(list));
       renderLeaderboardUI();
     }
 
     function clearLeaderboardHistory() {
-      if (confirm("Cậu có chắc chắn muốn xóa toàn bộ lịch sử điểm số của bạn bè không?")) {
-        localStorage.removeItem(STORAGE_KEY_LEADERBOARD);
+      const host = activeQuizData?.creator || "Mai Tâm";
+      if (confirm(`Cậu có chắc chắn muốn xóa toàn bộ lịch sử điểm số của bài quiz ${host} không?`)) {
+        const key = getLeaderboardStorageKey();
+        localStorage.removeItem(key);
+        if (getActiveQuizKey() === "tam_master") {
+          localStorage.removeItem("friendship_quiz_leaderboard_history");
+        }
         renderLeaderboardUI();
-        showToast("Đã làm mới danh sách thành tích!", "🗑️");
+        showToast(`Đã làm mới danh sách thành tích của ${host}!`, "🗑️");
       }
     }
 
     function renderLeaderboardUI() {
       const list = getLeaderboard();
+      const hostName = activeQuizData?.creator || "Mai Tâm";
       const countBadge = document.getElementById('leaderboardCountBadge');
       if (countBadge) countBadge.textContent = `${list.length} bạn đã làm`;
+
+      // Cập nhật tiêu đề bảng thành tích theo chủ nhân bài quiz
+      const titleEl = document.getElementById('leaderboardTitleWelcome');
+      if (titleEl) {
+        titleEl.innerHTML = `<span>🏆</span> Bảng thành tích bạn bè đã làm bài của ${escapeHtml(hostName)}:`;
+      }
 
       // 1. Render tại màn hình chào đón làm bài (Step 2.1)
       const welcomeListEl = document.getElementById('welcomeLeaderboardList');
@@ -1120,7 +1162,7 @@
         if (list.length === 0) {
           welcomeListEl.innerHTML = `
             <div class="text-xs text-white/80 italic p-3 rounded-xl bg-black/25 text-center font-medium">
-              Chưa có ai tham gia, cậu hãy là người đầu tiên thử xem hiểu Mai Tâm đến đâu nhé! ✨
+              Chưa có ai tham gia, cậu hãy là người đầu tiên thử xem hiểu ${escapeHtml(hostName)} đến đâu nhé! ✨
             </div>
           `;
         } else {
@@ -1167,7 +1209,7 @@
       const ownerListEl = document.getElementById('ownerLeaderboardList');
       if (ownerListEl) {
         if (list.length === 0) {
-          ownerListEl.innerHTML = `<div class="text-xs text-white/70 italic p-2">Chưa có bạn bè nào làm bài.</div>`;
+          ownerListEl.innerHTML = `<div class="text-xs text-white/70 italic p-2">Chưa có bạn bè nào làm bài của ${escapeHtml(hostName)}.</div>`;
         } else {
           ownerListEl.innerHTML = list.map((item, idx) => `
             <div class="flex items-center justify-between p-2 rounded-lg bg-black/30 text-xs text-white">
@@ -1472,8 +1514,8 @@
     }
 
     function addNewQuestion() {
-      if (customQuestions.length >= 15) {
-        showToast("Đã đạt giới hạn số lượng câu hỏi!", "⚠️");
+      if (customQuestions.length >= 30) {
+        showToast("Đã đạt giới hạn tối đa 30 câu hỏi!", "⚠️");
         return;
       }
       customQuestions.push({
@@ -1790,12 +1832,26 @@
       }
     }
 
+    let autoNextTimeout = null;
+
     function selectOption(optIndex) {
       playerAnswers[currentQuestionIndex] = optIndex;
       renderActiveQuestion();
+
+      // Tự động chuyển sang câu tiếp theo sau khi chọn đáp án (độ trễ 350ms mượt mà)
+      clearTimeout(autoNextTimeout);
+      autoNextTimeout = setTimeout(() => {
+        if (currentQuestionIndex < activeQuizData.questions.length - 1) {
+          currentQuestionIndex++;
+          renderActiveQuestion();
+        } else {
+          submitQuizAndShowResult();
+        }
+      }, 350);
     }
 
     function goToPrevQuestion() {
+      clearTimeout(autoNextTimeout);
       if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
         renderActiveQuestion();
@@ -1803,6 +1859,7 @@
     }
 
     function goToNextQuestion() {
+      clearTimeout(autoNextTimeout);
       if (playerAnswers[currentQuestionIndex] === null) {
         showToast("Cậu hãy chọn 1 đáp án trước khi qua câu tiếp theo nhé!", "💡");
         return;
@@ -1906,6 +1963,7 @@
     }
 
     function retakeQuiz() {
+      clearTimeout(autoNextTimeout);
       currentQuestionIndex = 0;
       playerAnswers = new Array(activeQuizData.questions.length).fill(null);
       showScreen('screenQuiz');
