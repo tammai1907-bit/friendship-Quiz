@@ -161,12 +161,49 @@
   <div id="ytPlayerContainer" style="position: fixed; bottom: 0; right: 0; width: 1px; height: 1px; opacity: 0.001; pointer-events: none; z-index: -9999;">
     <div id="ytPlayer"></div>
   </div>
-  <!-- Thanh thông báo kích hoạt âm thanh siêu nhẹ nếu trình duyệt chặn autoplay ban đầu -->
-  <div id="musicNoticeBanner" class="hidden fixed top-3 left-1/2 -translate-x-1/2 z-50 transition-all duration-300">
-    <button onclick="startBGMImmediately(); dismissMusicNotice();" class="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-600 hover:scale-105 border border-white/50 text-white text-xs font-black shadow-2xl flex items-center gap-2 animate-bounce cursor-pointer">
-      <span class="text-base">🎵</span>
-      <span>Click vào đây hoặc chạm bất kỳ đâu để bật nhạc nền Fall Rain 🌧️</span>
-    </button>
+  <!-- ==================== BẢNG ĐỀ XUẤT NHẠC NỀN THÔNG MINH (TỰ BIẾN MẤT TRONG 5S) ==================== -->
+  <div 
+    id="musicRecommendationPopup" 
+    class="fixed top-5 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 transform translate-y-0 opacity-100 max-w-sm w-[92%] sm:w-auto"
+  >
+    <div 
+      onclick="playRecommendedMusic()" 
+      class="group relative overflow-hidden p-3 sm:px-4 sm:py-3 rounded-2xl bg-slate-900/90 hover:bg-slate-900 border border-pink-400/50 backdrop-blur-xl shadow-2xl shadow-pink-500/30 flex items-center gap-3 cursor-pointer transition transform hover:scale-[1.02] active:scale-[0.98]"
+      title="Bấm để bật nhạc Fall Rain (July)"
+    >
+      <!-- Icon phát nhạc nhịp nhàng -->
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-500 to-indigo-600 flex items-center justify-center text-xl shrink-0 shadow-lg shadow-pink-500/40 group-hover:rotate-12 transition">
+        🎵
+      </div>
+
+      <!-- Nội dung tên bài hát đề xuất -->
+      <div class="text-left flex-grow pr-2">
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] font-black uppercase tracking-wider text-pink-300">Gợi ý nhạc nền chill 🌧️</span>
+          <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+        </div>
+        <div class="text-sm font-black text-white text-glow flex items-center gap-1.5">
+          <span>Fall Rain</span>
+          <span class="text-xs font-semibold text-pink-200">· July (Piano Instrumental)</span>
+        </div>
+        <p class="text-[11px] text-slate-300 font-medium">Chạm vào đây để nghe nhạc cùng quiz nhé! ✨</p>
+      </div>
+
+      <!-- Nút đóng nhanh -->
+      <button 
+        type="button" 
+        onclick="event.stopPropagation(); closeMusicRecommendation();" 
+        class="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center text-xs font-bold shrink-0 transition"
+        title="Bỏ qua"
+      >
+        ✕
+      </button>
+
+      <!-- Thanh tiến trình đếm ngược 5 giây -->
+      <div class="absolute bottom-0 left-0 right-0 h-0.5 bg-white/20 overflow-hidden">
+        <div id="musicRecommendCountdown" class="h-full bg-gradient-to-r from-pink-400 via-rose-400 to-indigo-400 transition-all ease-linear" style="width: 100%;"></div>
+      </div>
+    </div>
   </div>
 
   <!-- ==================== HEADER THANH ĐIỀU HƯỚNG ==================== -->
@@ -180,7 +217,7 @@
           Friendship Quiz
           <span class="text-xs px-2.5 py-0.5 rounded-full bg-pink-500/30 text-pink-100 border border-pink-300/40 font-bold tracking-normal uppercase shadow">2026</span>
         </h1>
-        <p class="text-xs text-white font-bold text-glow">Thử xem ai là bạn thân đích thực! 💖</p>
+        <p class="text-xs text-white font-bold text-glow tracking-wide">© 2026 Developed by Mai Tâm</p>
       </div>
     </div>
 
@@ -748,15 +785,58 @@
     let ytPlayer = null;
     let isYtReady = false;
 
-    function showMusicNotice() {
-      if (isMusicPlaying) return;
-      const b = document.getElementById('musicNoticeBanner');
-      if (b) b.classList.remove('hidden');
+    /* ==============================================================
+       BẢNG ĐỀ XUẤT NHẠC NỀN: TỰ BIẾN MẤT SAU 5 GIÂY NẾU KHÔNG NHẤN
+    =============================================================== */
+    let countdownInterval = null;
+
+    function initMusicRecommendation() {
+      // Nếu nhạc đang phát sẵn thì đóng bảng đề xuất
+      if (isMusicPlaying) {
+        closeMusicRecommendation();
+        return;
+      }
+
+      const popup = document.getElementById('musicRecommendationPopup');
+      const bar = document.getElementById('musicRecommendCountdown');
+      if (!popup) return;
+
+      popup.classList.remove('hidden');
+      popup.style.opacity = '1';
+      popup.style.transform = 'translate(-50%, 0)';
+
+      let timeLeftMs = 5000;
+      const stepMs = 50;
+
+      clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        timeLeftMs -= stepMs;
+        const percent = Math.max(0, (timeLeftMs / 5000) * 100);
+        if (bar) bar.style.width = `${percent}%`;
+
+        if (timeLeftMs <= 0) {
+          clearInterval(countdownInterval);
+          closeMusicRecommendation();
+        }
+      }, stepMs);
     }
 
-    function dismissMusicNotice() {
-      const b = document.getElementById('musicNoticeBanner');
-      if (b) b.classList.add('hidden');
+    function playRecommendedMusic() {
+      clearInterval(countdownInterval);
+      startBGMImmediately();
+      closeMusicRecommendation();
+      showToast("Đang phát: Fall Rain (July) 🎵", "🎶");
+    }
+
+    function closeMusicRecommendation() {
+      clearInterval(countdownInterval);
+      const popup = document.getElementById('musicRecommendationPopup');
+      if (!popup) return;
+      popup.style.opacity = '0';
+      popup.style.transform = 'translate(-50%, -20px)';
+      setTimeout(() => {
+        popup.classList.add('hidden');
+      }, 500);
     }
 
     function updateMusicUI(isPlaying) {
@@ -780,7 +860,7 @@
           ytPlayer.setVolume(55); // Âm lượng 55% dịu êm
           ytPlayer.playVideo();
           updateMusicUI(true);
-          dismissMusicNotice();
+          closeMusicRecommendation();
         } catch(e) {}
       }
     }
@@ -797,7 +877,7 @@
           ytPlayer.setVolume(55);
           ytPlayer.playVideo();
           updateMusicUI(true);
-          dismissMusicNotice();
+          closeMusicRecommendation();
           showToast("Đang phát: Fall Rain (July) 🎵", "🎶");
         }
       } else {
@@ -855,7 +935,7 @@
           'onStateChange': function(event) {
             if (event.data === YT.PlayerState.PLAYING) {
               updateMusicUI(true);
-              dismissMusicNotice();
+              closeMusicRecommendation();
             } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
               updateMusicUI(false);
             }
@@ -1732,6 +1812,9 @@
 
       // Thử phát nhạc ngay lập tức
       startBGMImmediately();
+
+      // Khởi động bảng đề xuất nhạc 5s nếu người dùng chưa bật
+      initMusicRecommendation();
 
       // Nếu đang chạy trên localhost: Tự động đồng bộ 10 câu hỏi & mật khẩu vào file index.html
       autoSyncToLocalFile();
