@@ -183,10 +183,10 @@
           <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
         </div>
         <div class="text-sm font-black text-white text-glow flex items-center gap-1.5">
-          <span>Fall Rain</span>
-          <span class="text-xs font-semibold text-pink-200">· July (Piano Instrumental)</span>
+          <span>Nhạc Chill Không Lời</span>
+          <span class="text-xs font-semibold text-pink-200">· Fall Rain, Spirited Away...</span>
         </div>
-        <p class="text-[11px] text-slate-300 font-medium">Chạm vào đây để nghe nhạc cùng quiz nhé! ✨</p>
+        <p class="text-[11px] text-slate-300 font-medium">Chạm vào đây để phát nhạc thư giãn cùng quiz nhé! ✨</p>
       </div>
 
       <!-- Nút đóng nhanh -->
@@ -217,7 +217,7 @@
           Friendship Quiz
           <span class="text-xs px-2.5 py-0.5 rounded-full bg-pink-500/30 text-pink-100 border border-pink-300/40 font-bold tracking-normal uppercase shadow">2026</span>
         </h1>
-        <p class="text-xs text-white font-bold text-glow tracking-wide">© 2026 Developed by Mai Tâm</p>
+        <p class="text-xs text-white font-bold text-glow tracking-wide">&copy; 2026 Developed by Mai Tâm</p>
       </div>
     </div>
 
@@ -246,17 +246,39 @@
         <span id="btnCreateTextMobile" class="sm:hidden">Tạo quiz</span>
       </button>
 
-      <!-- NÚT ĐIỀU KHIỂN NHẠC "FALL RAIN" (JULY) -->
-      <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/35 hover:bg-black/55 border border-white/25 backdrop-blur-md transition shadow text-xs">
-        <button id="btnMusicToggle" onclick="toggleBGM()" title="Bật / Tắt nhạc Fall Rain (July)" class="flex items-center gap-1.5 font-bold text-white text-glow">
-          <span id="musicStatusIcon" class="text-sm">🎵</span>
-          <span id="musicBtnText" class="hidden sm:inline">Fall Rain</span>
+      <!-- BỘ PHÁT NHẠC PLAYLIST 3 BÀI KHÔNG LỜI (FALL RAIN, SACRED PLAY SECRET PLACE, SPIRITED AWAY) -->
+      <div class="flex items-center gap-1 px-2 py-1.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/25 backdrop-blur-md transition shadow text-xs">
+        <button 
+          type="button"
+          onclick="playPrevTrack()" 
+          title="Bài trước (⏮️)" 
+          class="p-1 text-white/70 hover:text-white hover:scale-110 active:scale-95 transition"
+        >
+          ⏮️
+        </button>
+        <button 
+          id="btnMusicToggle" 
+          type="button"
+          onclick="toggleBGM()" 
+          title="Bật / Tạm dừng nhạc nền" 
+          class="flex items-center gap-1.5 font-bold text-white text-glow px-1"
+        >
+          <span id="musicStatusIcon" class="text-xs">🎵</span>
+          <span id="musicBtnText" class="max-w-[70px] sm:max-w-[110px] truncate text-[11px] sm:text-xs">Fall Rain</span>
           <!-- Sound wave visualizer mini -->
-          <div id="soundWaves" class="flex items-end gap-0.5 h-3.5 w-3.5">
+          <div id="soundWaves" class="flex items-end gap-0.5 h-3 w-3 shrink-0">
             <span class="w-0.5 bg-pink-400 rounded-full h-full animate-wave-bar" style="animation-delay: 0.1s;"></span>
             <span class="w-0.5 bg-pink-300 rounded-full h-full animate-wave-bar" style="animation-delay: 0.3s;"></span>
             <span class="w-0.5 bg-pink-400 rounded-full h-full animate-wave-bar" style="animation-delay: 0.2s;"></span>
           </div>
+        </button>
+        <button 
+          type="button"
+          onclick="playNextTrack()" 
+          title="Bài kế tiếp (⏭️)" 
+          class="p-1 text-white/70 hover:text-white hover:scale-110 active:scale-95 transition"
+        >
+          ⏭️
         </button>
       </div>
 
@@ -339,11 +361,23 @@
           <div class="mt-8 pt-5 border-t border-white/20 text-left">
             <div class="flex items-center justify-between mb-3">
               <h3 id="leaderboardTitleWelcome" class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2 text-glow">
-                <span>🏆</span> Bảng thành tích bạn bè đã tham gia:
+                <span>🏆</span> Bảng thành tích bạn bè đã làm bài:
               </h3>
-              <span id="leaderboardCountBadge" class="text-xs bg-pink-500/30 text-pink-100 font-bold px-2.5 py-0.5 rounded-full border border-pink-300/40 text-glow">
-                0 người
-              </span>
+              <div class="flex items-center gap-1.5">
+                <button 
+                  id="btnRefreshLeaderboard" 
+                  type="button"
+                  onclick="loadScoresFromCloud(true)" 
+                  title="Cập nhật điểm mới nhất từ bạn bè" 
+                  class="px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/25 border border-white/20 text-xs text-white transition flex items-center gap-1 font-bold text-glow"
+                >
+                  <span id="refreshIconSpin">🔄</span>
+                  <span class="hidden sm:inline">Làm mới</span>
+                </button>
+                <span id="leaderboardCountBadge" class="text-xs bg-pink-500/30 text-pink-100 font-bold px-2.5 py-0.5 rounded-full border border-pink-300/40 text-glow">
+                  0 người
+                </span>
+              </div>
             </div>
 
             <div id="welcomeLeaderboardList" class="space-y-2 max-h-52 overflow-y-auto pr-1">
@@ -529,6 +563,50 @@
           </div>
         </div>
 
+        <!-- Khu vực cấu hình đồng bộ Google Sheets cho chủ nhân -->
+        <div id="ownerCloudSyncSection" class="mt-6 pt-5 border-t border-white/20 text-left">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2 text-glow">
+              <span>📊</span> Đồng bộ Google Sheet (Điện thoại & Máy tính):
+            </h3>
+            <button 
+              type="button" 
+              onclick="openGoogleSheetGuideModal()" 
+              class="text-xs text-pink-300 hover:text-pink-200 underline font-bold text-glow"
+            >
+              📖 Hướng dẫn tạo (1 phút)
+            </button>
+          </div>
+          <p class="text-xs text-white/80 mb-3 font-medium text-glow leading-relaxed">
+            Khi gắn link Google Sheet vào đây, bất kỳ bạn bè nào làm bài trên Zalo, Messenger hay iPhone/Android đều sẽ tự động lưu điểm và đồng bộ lên Bảng thành tích cho mọi người cùng thấy!
+          </p>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input 
+              type="text" 
+              id="cloudSheetApiInput" 
+              placeholder="Dán link Web App Google Apps Script vào đây (https://script.google.com/.../exec)"
+              class="glass-input-field flex-1 px-3 py-2 rounded-xl text-xs text-white placeholder-slate-300 outline-none"
+            >
+            <div class="flex gap-2">
+              <button 
+                type="button" 
+                onclick="saveCloudSheetApiConfig()"
+                class="px-4 py-2 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs shadow transition whitespace-nowrap"
+              >
+                Lưu link
+              </button>
+              <button 
+                type="button" 
+                onclick="testCloudSheetApiConnection()"
+                class="px-3 py-2 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white font-bold text-xs shadow transition whitespace-nowrap"
+              >
+                Kiểm tra ⚡
+              </button>
+            </div>
+          </div>
+          <div id="cloudSheetStatusMsg" class="text-xs mt-2 font-bold hidden text-glow"></div>
+        </div>
+
       </div>
     </section>
 
@@ -566,6 +644,24 @@
           <p id="funFeedbackText" class="text-base md:text-lg font-black text-pink-100 text-glow">
             "Nhận xét kết quả..."
           </p>
+        </div>
+
+        <!-- GỬI BÁO ĐIỂM CHO CHỦ NHÂN QUA ZALO / MESSENGER -->
+        <div class="p-4 rounded-2xl bg-gradient-to-r from-blue-900/40 via-indigo-900/40 to-pink-900/40 border border-indigo-400/30 text-center backdrop-blur-sm shadow-xl mb-6">
+          <div class="text-xs uppercase font-black tracking-widest text-indigo-200 mb-1 flex items-center justify-center gap-1.5 text-glow">
+            <span>📲</span> Báo điểm cho <span id="resShareHostName" class="text-pink-300 font-bold">Mai Tâm</span>
+          </div>
+          <p class="text-xs text-white/90 mb-3 font-semibold text-glow">
+            Gửi ngay kết quả này qua Zalo hoặc Messenger để chủ nhân cập nhật tên cậu lên Bảng thành tích nhé!
+          </p>
+          <button 
+            type="button"
+            onclick="sendResultToHostViaShare()"
+            class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 hover:from-blue-600 hover:to-pink-600 text-white font-black text-sm shadow-lg shadow-indigo-500/40 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
+          >
+            <span>🚀</span>
+            <span>Gửi kết quả cho <span id="resShareBtnHost">Mai Tâm</span> qua Zalo / Messenger</span>
+          </button>
         </div>
 
         <!-- BẢNG XẾP HẠNG BẠN BÈ TẠI MÀN HÌNH KẾT QUẢ -->
@@ -701,6 +797,102 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL HƯỚNG DẪN GOOGLE SHEET ==================== -->
+  <div id="googleSheetGuideModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="ultra-transparent-card bg-slate-900/95 max-w-lg w-full p-6 text-left transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="googleSheetGuideBox">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-white/20">
+        <h3 class="text-base md:text-lg font-black text-white flex items-center gap-2 text-title-glow">
+          <span>📊</span> Hướng Dẫn Đồng Bộ Google Sheets (1 phút)
+        </h3>
+        <button onclick="closeGoogleSheetGuideModal()" class="text-white/60 hover:text-white text-lg font-bold">✕</button>
+      </div>
+
+      <div class="space-y-3.5 text-xs text-slate-200">
+        <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+          <p class="font-bold text-pink-300 mb-1">Bước 1: Tạo Google Sheet mới</p>
+          <p>Mở trình duyệt truy cập <a href="https://sheets.new" target="_blank" class="text-blue-300 underline font-bold">sheets.new</a> để tạo 1 Google Trang tính mới (đặt tên ví dụ: <b>Điểm Friendship Quiz</b>).</p>
+        </div>
+
+        <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+          <div class="flex items-center justify-between mb-1.5">
+            <p class="font-bold text-pink-300">Bước 2: Mở Apps Script & Dán mã</p>
+            <button onclick="copyAppsScriptCode()" class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] transition shadow">
+              📋 Sao chép mã
+            </button>
+          </div>
+          <p class="mb-2">Trên Google Sheets, bấm vào <b>Tiện ích mở rộng (Extensions)</b> ➔ <b>Apps Script</b>. Xóa hết code mẫu rồi dán mã này vào:</p>
+          <pre id="appsScriptCodeBlock" class="p-2.5 rounded-lg bg-black/60 text-slate-300 font-mono text-[11px] overflow-x-auto max-h-36 border border-white/10 select-all leading-tight"></pre>
+        </div>
+
+        <div class="p-3 rounded-xl bg-white/5 border border-white/10">
+          <p class="font-bold text-pink-300 mb-1">Bước 3: Triển khai Web App lấy link</p>
+          <ol class="list-decimal list-inside space-y-1">
+            <li>Bấm <b>Triển khai (Deploy)</b> ➔ <b>Tùy chọn triển khai mới (New deployment)</b>.</li>
+            <li>Chọn loại: <b>Ứng dụng web (Web app)</b>.</li>
+            <li>Thực thi dưới dạng: <b>Tôi (Me)</b>.</li>
+            <li>Ai có quyền truy cập: <b class="text-amber-300">Bất kỳ ai (Anyone)</b>.</li>
+            <li>Bấm <b>Triển khai</b> ➔ Cấp quyền ➔ Sao chép <b>URL Ứng dụng web</b> (dạng <code class="text-pink-300">.../exec</code>).</li>
+            <li>Dán link đó vào ô <b>"Dán link Web App"</b> ở mục Chủ nhân rồi bấm <b>Lưu link</b>!</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-white/20 flex justify-end">
+        <button onclick="closeGoogleSheetGuideModal()" class="px-5 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs transition shadow-lg">
+          Đã hiểu, đóng lại 👍
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL XEM CHI TIẾT BÀI LÀM CỦA BẠN BÈ (DÀNH CHO CHỦ PHÒNG) ==================== -->
+  <div id="playerDetailModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="ultra-transparent-card bg-slate-900/95 max-w-lg w-full p-6 text-left transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="playerDetailBox">
+      
+      <!-- Header modal -->
+      <div class="flex items-center justify-between pb-3 mb-4 border-b border-white/20">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xl">📝</span>
+            <h3 class="text-base sm:text-lg font-black text-white text-title-glow" id="detailPlayerTitle">
+              Bài Làm Của Bạn
+            </h3>
+          </div>
+          <p class="text-xs text-white/70 mt-0.5" id="detailPlayerMeta">
+            Thời gian: ... • Điểm: ...
+          </p>
+        </div>
+        <button onclick="closePlayerDetailModal()" class="text-white/60 hover:text-white text-lg font-bold p-1">✕</button>
+      </div>
+
+      <!-- Thẻ tóm tắt kết quả nổi bật -->
+      <div id="detailPlayerScoreCard" class="p-3.5 rounded-2xl bg-white/10 border border-white/20 mb-4 flex items-center justify-between text-xs font-bold text-white text-glow">
+        <div class="flex items-center gap-2.5">
+          <span class="text-3xl" id="detailBadgeIcon">🎯</span>
+          <div>
+            <div class="text-base font-black text-pink-200" id="detailScoreText">0/0 câu</div>
+            <div class="text-[11px] text-white/80 font-medium" id="detailPercentText">Đạt 0%</div>
+          </div>
+        </div>
+        <span id="detailRankBadge" class="px-3 py-1 rounded-full bg-pink-500/35 border border-pink-300/40 text-xs font-black">
+          Chi tiết bài làm
+        </span>
+      </div>
+
+      <!-- Danh sách chi tiết từng câu hỏi đúng / sai -->
+      <div class="space-y-3" id="detailQuestionsList">
+        <!-- Render danh sách câu hỏi tại đây -->
+      </div>
+
+      <div class="mt-5 pt-3 border-t border-white/20 flex justify-end">
+        <button onclick="closePlayerDetailModal()" class="px-5 py-2.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-bold text-xs transition shadow-lg">
+          Đóng lại 👍
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <!-- Toast Thông báo nhỏ (Toast Notification) -->
   <div id="toastNotification" class="fixed bottom-6 right-6 z-50 pointer-events-none transform translate-y-12 opacity-0 transition-all duration-300 px-4 py-3 rounded-xl bg-slate-900/90 border border-pink-400/50 text-white text-sm font-bold shadow-2xl flex items-center gap-2 backdrop-blur-md">
     <span id="toastIcon">✅</span>
@@ -759,6 +951,12 @@
       setupQuizWelcomeUI();
       renderLeaderboardUI();
       showScreen('screenQuiz');
+
+      // Tự động kiểm tra & đồng bộ điểm số nếu mở qua link gửi Zalo/Messenger
+      checkUrlSyncScore();
+
+      // Tự động tải bảng thành tích mới nhất từ Google Sheets Cloud
+      loadScoresFromCloud();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -839,10 +1037,44 @@
       }, 500);
     }
 
+    /* ==============================================================
+       DANH SÁCH 3 BÀI NHẠC KHÔNG LỜI DU DƯƠNG (INSTRUMENTAL)
+       1. Fall Rain (July)
+       2. Sacred Play Secret Place (Matryoshka)
+       3. Spirited Away (One Summer's Day - Joe Hisaishi)
+    =============================================================== */
+    const PLAYLIST = [
+      {
+        title: "Fall Rain",
+        artist: "July",
+        videoId: "2AOTAh1jfaY",
+        desc: "Piano Instrumental"
+      },
+      {
+        title: "Sacred Play Secret Place",
+        artist: "Matryoshka",
+        videoId: "XX2gPs44fxg",
+        desc: "Instrumental"
+      },
+      {
+        title: "Spirited Away",
+        artist: "Joe Hisaishi",
+        videoId: "X05L1C5768s",
+        desc: "One Summer's Day Piano"
+      }
+    ];
+    let currentTrackIndex = 0;
+
     function updateMusicUI(isPlaying) {
       isMusicPlaying = isPlaying;
       const soundWaves = document.getElementById('soundWaves');
       const icon = document.getElementById('musicStatusIcon');
+      const textEl = document.getElementById('musicBtnText');
+      const currentTrack = PLAYLIST[currentTrackIndex];
+
+      if (textEl && currentTrack) {
+        textEl.textContent = currentTrack.title;
+      }
       
       if (isPlaying) {
         if (icon) icon.textContent = '🎶';
@@ -851,6 +1083,41 @@
         if (icon) icon.textContent = '🔇';
         if (soundWaves) soundWaves.classList.add('hidden');
       }
+    }
+
+    function loadAndPlayTrack(index, showToastMsg = true) {
+      if (index < 0) index = PLAYLIST.length - 1;
+      if (index >= PLAYLIST.length) index = 0;
+      currentTrackIndex = index;
+      const track = PLAYLIST[currentTrackIndex];
+
+      updateMusicUI(true);
+
+      if (isYtReady && ytPlayer) {
+        try {
+          if (typeof ytPlayer.loadVideoById === 'function') {
+            ytPlayer.loadVideoById({
+              videoId: track.videoId,
+              startSeconds: 0
+            });
+            ytPlayer.unMute();
+            ytPlayer.setVolume(55);
+            ytPlayer.playVideo();
+          }
+        } catch(e) {}
+      }
+      closeMusicRecommendation();
+      if (showToastMsg) {
+        showToast(`Đang phát: ${track.title} (${track.artist}) 🎵`, "🎶");
+      }
+    }
+
+    function playNextTrack() {
+      loadAndPlayTrack(currentTrackIndex + 1);
+    }
+
+    function playPrevTrack() {
+      loadAndPlayTrack(currentTrackIndex - 1);
     }
 
     function startBGMImmediately() {
@@ -871,18 +1138,22 @@
         if (state === YT.PlayerState.PLAYING) {
           ytPlayer.pauseVideo();
           updateMusicUI(false);
-          showToast("Đã tạm dừng nhạc Fall Rain", "⏸️");
+          showToast(`Đã tạm dừng: ${PLAYLIST[currentTrackIndex].title}`, "⏸️");
         } else {
           ytPlayer.unMute();
           ytPlayer.setVolume(55);
           ytPlayer.playVideo();
           updateMusicUI(true);
           closeMusicRecommendation();
-          showToast("Đang phát: Fall Rain (July) 🎵", "🎶");
+          showToast(`Đang phát: ${PLAYLIST[currentTrackIndex].title} 🎵`, "🎶");
         }
       } else {
-        startBGMImmediately();
+        loadAndPlayTrack(currentTrackIndex);
       }
+    }
+
+    function playRecommendedMusic() {
+      loadAndPlayTrack(currentTrackIndex);
     }
 
     // Kích hoạt âm thanh ngay khi người dùng chạm, click hoặc nhấn bất kỳ phím nào
@@ -911,11 +1182,9 @@
       ytPlayer = new YT.Player('ytPlayer', {
         height: '10',
         width: '10',
-        videoId: '2AOTAh1jfaY', // Video chuẩn xác bản gốc: Fall Rain - July
+        videoId: PLAYLIST[0].videoId,
         playerVars: {
           'autoplay': 1,
-          'loop': 1,
-          'playlist': '2AOTAh1jfaY',
           'controls': 0,
           'disablekb': 1,
           'fs': 0,
@@ -936,7 +1205,10 @@
             if (event.data === YT.PlayerState.PLAYING) {
               updateMusicUI(true);
               closeMusicRecommendation();
-            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+            } else if (event.data === YT.PlayerState.ENDED) {
+              // TỰ ĐỘNG CHUYỂN SANG BÀI TIẾP THEO KHI HẾT BÀI!
+              playNextTrack();
+            } else if (event.data === YT.PlayerState.PAUSED) {
               updateMusicUI(false);
             }
           }
@@ -1137,7 +1409,8 @@
           body: JSON.stringify({
             creator: recovered.creator || creatorName || "Mai Tâm",
             questions: recovered.questions,
-            password: savedPass || DEFAULT_PASS
+            password: savedPass || DEFAULT_PASS,
+            cloudSheetApi: CLOUD_SHEET_API
           })
         }).then(r => r.json()).then(res => {
           if (res.success) {
@@ -1170,6 +1443,447 @@
       return "tam_master";
     }
 
+    /* ==============================================================
+       CẤU HÌNH ĐỒNG BỘ CLOUD DATABASE QUA GOOGLE SHEETS
+       (Tự động đồng bộ điểm số khi bạn bè làm trên Zalo, Messenger, Điện thoại)
+    =============================================================== */
+    let CLOUD_SHEET_API = "";
+    try {
+      const savedApi = localStorage.getItem("friendship_quiz_cloud_sheet_api");
+      if (savedApi) CLOUD_SHEET_API = savedApi;
+    } catch(e) {}
+
+    const APPS_SCRIPT_CODE = `function doPost(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["Thời gian", "Quiz ID", "Chủ nhân", "Tên bạn bè", "Điểm số", "Tổng câu", "Tỷ lệ %"]);
+    }
+    var data = JSON.parse(e.postData.contents);
+    sheet.appendRow([
+      data.time || new Date().toLocaleString("vi-VN"),
+      data.quizKey || "tam_master",
+      data.hostName || "Mai Tâm",
+      data.playerName || "Khách",
+      Number(data.score) || 0,
+      Number(data.total) || 10,
+      Number(data.percent) || 0
+    ]);
+    return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  try {
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var rows = sheet.getDataRange().getValues();
+    var quizKey = e.parameter ? e.parameter.quizKey : null;
+    var list = [];
+    for (var i = 1; i < rows.length; i++) {
+      var row = rows[i];
+      if (!quizKey || row[1] == quizKey) {
+        list.push({
+          time: row[0],
+          quizKey: row[1],
+          hostName: row[2],
+          name: row[3],
+          score: row[4],
+          total: row[5],
+          percent: row[6]
+        });
+      }
+    }
+    list.reverse();
+    return ContentService.createTextOutput(JSON.stringify(list))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify([]))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}`;
+
+    function openGoogleSheetGuideModal() {
+      const modal = document.getElementById('googleSheetGuideModal');
+      const box = document.getElementById('googleSheetGuideBox');
+      const codeBlock = document.getElementById('appsScriptCodeBlock');
+      if (codeBlock) codeBlock.textContent = APPS_SCRIPT_CODE;
+      if (modal && box) {
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          modal.classList.remove('opacity-0');
+          box.classList.remove('scale-95');
+        }, 10);
+      }
+    }
+
+    function closeGoogleSheetGuideModal() {
+      const modal = document.getElementById('googleSheetGuideModal');
+      const box = document.getElementById('googleSheetGuideBox');
+      if (modal && box) {
+        modal.classList.add('opacity-0');
+        box.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 250);
+      }
+    }
+
+    function copyAppsScriptCode() {
+      navigator.clipboard.writeText(APPS_SCRIPT_CODE).then(() => {
+        showToast("Đã sao chép mã Apps Script!", "📋");
+      }).catch(() => {
+        prompt("Sao chép mã này:", APPS_SCRIPT_CODE);
+      });
+    }
+
+    function saveCloudSheetApiConfig() {
+      const input = document.getElementById('cloudSheetApiInput');
+      const statusEl = document.getElementById('cloudSheetStatusMsg');
+      if (!input) return;
+      const val = input.value.trim();
+      CLOUD_SHEET_API = val;
+      localStorage.setItem("friendship_quiz_cloud_sheet_api", val);
+
+      if (statusEl) {
+        statusEl.classList.remove('hidden', 'text-rose-300');
+        statusEl.classList.add('text-emerald-300');
+        statusEl.textContent = val ? "✅ Đã lưu link Google Sheet thành công!" : "ℹ️ Đã xóa link Google Sheet";
+      }
+      showToast("Đã lưu cấu hình Google Sheet!", "💾");
+      autoSyncToLocalFile();
+    }
+
+    function testCloudSheetApiConnection() {
+      const input = document.getElementById('cloudSheetApiInput');
+      const statusEl = document.getElementById('cloudSheetStatusMsg');
+      const url = (input ? input.value.trim() : "") || CLOUD_SHEET_API;
+
+      if (!url || !url.startsWith('http')) {
+        alert("Vui lòng dán link Web App Google Apps Script hợp lệ (bắt đầu bằng https://script.google.com/...)!");
+        return;
+      }
+
+      if (statusEl) {
+        statusEl.classList.remove('hidden', 'text-rose-300', 'text-emerald-300');
+        statusEl.classList.add('text-amber-300');
+        statusEl.textContent = "⏳ Đang kiểm tra kết nối tới Google Sheet...";
+      }
+
+      fetch(`${url}?quizKey=test_probe`)
+        .then(res => res.json())
+        .then(() => {
+          if (statusEl) {
+            statusEl.classList.remove('text-amber-300');
+            statusEl.classList.add('text-emerald-300');
+            statusEl.textContent = "⚡ Kết nối thành công! Google Sheet đã sẵn sàng đồng bộ điểm bạn bè.";
+          }
+          showToast("Kết nối Google Sheet thành công!", "🎉");
+        })
+        .catch(err => {
+          if (statusEl) {
+            statusEl.classList.remove('text-amber-300');
+            statusEl.classList.add('text-rose-300');
+            statusEl.textContent = "❌ Chưa kết nối được. Cậu hãy kiểm tra xem khi Triển khai Web App đã chọn 'Ai có quyền truy cập: Bất kỳ ai (Anyone)' chưa nhé!";
+          }
+        });
+    }
+
+    function syncScoreToCloud(qKey, hostName, pName, score, total, percent, timeStr) {
+      if (!CLOUD_SHEET_API || !CLOUD_SHEET_API.startsWith('http')) return;
+      try {
+        fetch(CLOUD_SHEET_API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            quizKey: qKey,
+            hostName: hostName,
+            playerName: pName,
+            score: score,
+            total: total,
+            percent: percent,
+            time: timeStr
+          })
+        }).then(r => r.json()).then(res => {
+          console.log("[Cloud Sync] Đã lưu vào Google Sheet:", res);
+        }).catch(err => {
+          console.warn("[Cloud Sync Error]:", err);
+        });
+      } catch(e) {}
+    }
+
+    function loadScoresFromCloud(forceToast = false) {
+      if (!CLOUD_SHEET_API || !CLOUD_SHEET_API.startsWith('http')) {
+        if (forceToast) showToast("Vào 'Dành cho chủ nhân' để kết nối Google Sheet đồng bộ nha!", "ℹ️");
+        return;
+      }
+
+      const spinIcon = document.getElementById('refreshIconSpin');
+      if (spinIcon) spinIcon.classList.add('animate-spin');
+
+      const qKey = getActiveQuizKey();
+      fetch(`${CLOUD_SHEET_API}?quizKey=${encodeURIComponent(qKey)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (spinIcon) spinIcon.classList.remove('animate-spin');
+          if (Array.isArray(data) && data.length > 0) {
+            data.forEach(item => {
+              importScoreToLeaderboard(qKey, item.name, parseInt(item.score), parseInt(item.total), parseInt(item.percent), item.time);
+            });
+            renderLeaderboardUI();
+            if (forceToast) showToast(`Đã đồng bộ ${data.length} kết quả từ Google Sheet!`, "☁️");
+          } else {
+            if (forceToast) showToast("Bảng thành tích đã được cập nhật!", "✅");
+          }
+        })
+        .catch(err => {
+          if (spinIcon) spinIcon.classList.remove('animate-spin');
+          console.warn("[Cloud Load Error]:", err);
+          if (forceToast) showToast("Không thể kết nối đến Google Sheet!", "⚠️");
+        });
+    }
+
+    function importScoreToLeaderboard(qKey, pName, score, total, percent, timeStr, ansArr = null) {
+      if (!pName) return;
+      const storageKey = `friendship_quiz_leaderboard_${qKey}`;
+      let list = [];
+      try {
+        const raw = localStorage.getItem(storageKey);
+        list = raw ? JSON.parse(raw) : [];
+      } catch(e) { list = []; }
+
+      const isDup = list.some(item => 
+        item.name.trim().toLowerCase() === pName.trim().toLowerCase() &&
+        item.score === score &&
+        item.total === total
+      );
+
+      if (!isDup) {
+        const now = new Date();
+        const formattedTime = timeStr || `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+        
+        let details = null;
+        if (Array.isArray(ansArr) && activeQuizData?.questions) {
+          details = activeQuizData.questions.map((q, qIdx) => {
+            const chosenIdx = ansArr[qIdx];
+            const isCorrect = chosenIdx === q.answerIndex;
+            return {
+              question: q.question,
+              options: q.options,
+              chosenIndex: chosenIdx,
+              chosenText: (chosenIdx !== null && chosenIdx !== undefined && q.options[chosenIdx] !== undefined) ? q.options[chosenIdx] : "Chưa chọn",
+              correctIndex: q.answerIndex,
+              correctText: q.options[q.answerIndex] !== undefined ? q.options[q.answerIndex] : "",
+              isCorrect: isCorrect
+            };
+          });
+        }
+
+        list.unshift({
+          id: Date.now(),
+          name: pName,
+          score: score,
+          total: total,
+          percent: percent,
+          time: formattedTime,
+          playerAnswers: ansArr ? [...ansArr] : null,
+          details: details
+        });
+
+        if (list.length > 50) list.pop();
+        localStorage.setItem(storageKey, JSON.stringify(list));
+        if (qKey === "tam_master") {
+          localStorage.setItem("friendship_quiz_leaderboard_history", JSON.stringify(list));
+        }
+        renderLeaderboardUI();
+      }
+    }
+
+    function checkUrlSyncScore() {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const syncPlayer = urlParams.get('sync_player');
+        if (syncPlayer) {
+          const score = parseInt(urlParams.get('score')) || 0;
+          const total = parseInt(urlParams.get('total')) || 10;
+          const percent = parseInt(urlParams.get('percent')) || Math.round((score / total) * 100);
+          const qKey = urlParams.get('quiz_key') || getActiveQuizKey();
+          const timeStr = urlParams.get('time') || null;
+          const ansRaw = urlParams.get('ans');
+          let ansArr = null;
+          if (ansRaw) {
+            ansArr = ansRaw.split(',').map(x => (x === '' || x === 'null') ? null : parseInt(x));
+          }
+
+          importScoreToLeaderboard(qKey, syncPlayer, score, total, percent, timeStr, ansArr);
+          showToast(`🏆 Đã ghi nhận điểm của ${syncPlayer}: ${score}/${total} câu (${percent}%)!`, "🎉");
+
+          const cleanUrl = window.location.pathname + (urlParams.get('quiz_data') ? `?quiz_data=${encodeURIComponent(urlParams.get('quiz_data'))}` : '');
+          window.history.replaceState({}, document.title, cleanUrl);
+        }
+      } catch(e) {}
+    }
+
+    function sendResultToHostViaShare() {
+      if (!activeQuizData) return;
+      const score = parseInt(document.getElementById('scoreText').textContent) || 0;
+      const total = parseInt(document.getElementById('totalQuestionsText').textContent) || 10;
+      const percent = Math.round((score / total) * 100);
+      const hostName = activeQuizData.creator || "Mai Tâm";
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+      const qKey = getActiveQuizKey();
+      const ansParam = Array.isArray(playerAnswers) ? `&ans=${encodeURIComponent(playerAnswers.join(','))}` : '';
+
+      let syncUrl = `${window.location.origin}${window.location.pathname}?sync_player=${encodeURIComponent(playerName)}&score=${score}&total=${total}&percent=${percent}&quiz_key=${encodeURIComponent(qKey)}&time=${encodeURIComponent(timeStr)}${ansParam}`;
+      if (activeQuizData.isCustom && activeQuizData.rawData) {
+        syncUrl += `&quiz_data=${encodeURIComponent(activeQuizData.rawData)}`;
+      }
+
+      const shareTitle = `Kết quả Friendship Quiz của ${playerName}`;
+      const shareText = `Tớ vừa làm bài kiểm tra hiểu ${hostName} đạt ${score}/${total} câu (${percent}%) nè! ${hostName} bấm vào link này để lưu tên tớ lên Bảng thành tích nhé:\n${syncUrl}`;
+
+      if (navigator.share) {
+        navigator.share({
+          title: shareTitle,
+          text: `Tớ vừa làm bài quiz hiểu ${hostName} đạt ${score}/${total} câu (${percent}%) nè! Bấm link để lưu tên tớ nhé:`,
+          url: syncUrl
+        }).then(() => {
+          showToast("Đã mở chia sẻ! Chọn Zalo hoặc Messenger để gửi nha 💖", "🚀");
+        }).catch(() => {
+          copySyncLinkToClipboard(syncUrl, hostName);
+        });
+      } else {
+        copySyncLinkToClipboard(syncUrl, hostName);
+      }
+    }
+
+    function copySyncLinkToClipboard(syncUrl, hostName) {
+      navigator.clipboard.writeText(syncUrl).then(() => {
+        alert(`ĐÃ SAO CHÉP LINK BÁO ĐIỂM! 🎉\n\nCậu hãy dán link này gửi vào Zalo hoặc Messenger cho ${hostName} nhé.\nKhi ${hostName} bấm vào link, tên và điểm số của cậu sẽ lập tức xuất hiện trên Bảng thành tích vĩnh viễn!`);
+        showToast("Đã sao chép link báo điểm!", "📋");
+      }).catch(() => {
+        prompt(`Hãy sao chép link sau và gửi cho ${hostName} qua Zalo / Messenger:`, syncUrl);
+      });
+    }
+
+    /* ==============================================================
+       QUẢN LÝ XEM CHI TIẾT BÀI LÀM CỦA BẠN BÈ (DÀNH CHO CHỦ PHÒNG)
+    =============================================================== */
+    function openPlayerDetailModal(itemId) {
+      const list = getLeaderboard();
+      const item = list.find(x => String(x.id) === String(itemId)) || list[itemId];
+      if (!item) {
+        showToast("Không tìm thấy dữ liệu bài làm này!", "⚠️");
+        return;
+      }
+
+      const modal = document.getElementById('playerDetailModal');
+      const box = document.getElementById('playerDetailBox');
+      const titleEl = document.getElementById('detailPlayerTitle');
+      const metaEl = document.getElementById('detailPlayerMeta');
+      const scoreEl = document.getElementById('detailScoreText');
+      const percentEl = document.getElementById('detailPercentText');
+      const questionsContainer = document.getElementById('detailQuestionsList');
+      const badgeIcon = document.getElementById('detailBadgeIcon');
+
+      if (titleEl) titleEl.textContent = `Bài Làm Của: ${item.name}`;
+      if (metaEl) metaEl.textContent = `Thời gian làm bài: ${item.time || 'Gần đây'} • Điểm số: ${item.score}/${item.total} câu`;
+      if (scoreEl) scoreEl.textContent = `${item.score}/${item.total} câu`;
+      if (percentEl) percentEl.textContent = `Đạt ${item.percent}% mức độ thấu hiểu`;
+
+      if (badgeIcon) {
+        badgeIcon.textContent = item.percent === 100 ? "👑" : (item.percent >= 70 ? "💖" : (item.percent >= 40 ? "🧐" : "🤣"));
+      }
+
+      if (questionsContainer) {
+        questionsContainer.innerHTML = '';
+
+        if (Array.isArray(item.details) && item.details.length > 0) {
+          questionsContainer.innerHTML = item.details.map((q, idx) => {
+            const isCorrect = q.isCorrect;
+            return `
+              <div class="p-3.5 rounded-2xl ${isCorrect ? 'bg-emerald-950/40 border border-emerald-400/30' : 'bg-rose-950/40 border border-rose-400/30'} text-xs text-white">
+                <div class="flex items-start justify-between gap-2 mb-2">
+                  <span class="font-bold text-white text-glow leading-snug">Câu ${idx + 1}: ${escapeHtml(q.question)}</span>
+                  <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black ${isCorrect ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-300/40' : 'bg-rose-500/30 text-rose-200 border border-rose-300/40'}">
+                    ${isCorrect ? '✅ ĐÚNG' : '❌ SAI'}
+                  </span>
+                </div>
+                <div class="space-y-1 text-[11px] pt-1.5 border-t border-white/10">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-white/60">Bạn ấy chọn:</span>
+                    <b class="${isCorrect ? 'text-emerald-300 font-black' : 'text-rose-300 font-black'}">${escapeHtml(q.chosenText || 'Chưa chọn')}</b>
+                  </div>
+                  ${!isCorrect ? `
+                  <div class="flex items-center gap-1.5 text-amber-300">
+                    <span class="text-white/60">Đáp án đúng của chủ nhân:</span>
+                    <b class="font-bold">${escapeHtml(q.correctText || '')}</b>
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else if (Array.isArray(item.playerAnswers) && activeQuizData?.questions) {
+          questionsContainer.innerHTML = activeQuizData.questions.map((q, idx) => {
+            const chosenIdx = item.playerAnswers[idx];
+            const isCorrect = chosenIdx === q.answerIndex;
+            const chosenText = chosenIdx !== null && chosenIdx !== undefined && q.options[chosenIdx] !== undefined ? q.options[chosenIdx] : "Chưa chọn";
+            const correctText = q.options[q.answerIndex] !== undefined ? q.options[q.answerIndex] : "";
+            return `
+              <div class="p-3.5 rounded-2xl ${isCorrect ? 'bg-emerald-950/40 border border-emerald-400/30' : 'bg-rose-950/40 border border-rose-400/30'} text-xs text-white">
+                <div class="flex items-start justify-between gap-2 mb-2">
+                  <span class="font-bold text-white text-glow leading-snug">Câu ${idx + 1}: ${escapeHtml(q.question)}</span>
+                  <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black ${isCorrect ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-300/40' : 'bg-rose-500/30 text-rose-200 border border-rose-300/40'}">
+                    ${isCorrect ? '✅ ĐÚNG' : '❌ SAI'}
+                  </span>
+                </div>
+                <div class="space-y-1 text-[11px] pt-1.5 border-t border-white/10">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-white/60">Bạn ấy chọn:</span>
+                    <b class="${isCorrect ? 'text-emerald-300 font-black' : 'text-rose-300 font-black'}">${escapeHtml(chosenText)}</b>
+                  </div>
+                  ${!isCorrect ? `
+                  <div class="flex items-center gap-1.5 text-amber-300">
+                    <span class="text-white/60">Đáp án đúng của chủ nhân:</span>
+                    <b class="font-bold">${escapeHtml(correctText)}</b>
+                  </div>
+                  ` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          questionsContainer.innerHTML = `
+            <div class="p-4 rounded-xl bg-black/30 border border-white/10 text-center text-xs text-white/80">
+              <p class="font-bold mb-1">ℹ️ Lịch sử làm bài trước khi có tính năng lưu chi tiết từng câu.</p>
+              <p class="text-white/60">Từ các lượt làm bài mới, chủ phòng chỉ cần nhấn vào tên bạn bè là sẽ xem được chi tiết từng câu đúng/sai nhé!</p>
+            </div>
+          `;
+        }
+      }
+
+      if (modal && box) {
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+          modal.classList.remove('opacity-0');
+          box.classList.remove('scale-95');
+        }, 10);
+      }
+    }
+
+    function closePlayerDetailModal() {
+      const modal = document.getElementById('playerDetailModal');
+      const box = document.getElementById('playerDetailBox');
+      if (modal && box) {
+        modal.classList.add('opacity-0');
+        box.classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 250);
+      }
+    }
+
     function getLeaderboardStorageKey() {
       const qKey = getActiveQuizKey();
       return `friendship_quiz_leaderboard_${qKey}`;
@@ -1191,10 +1905,26 @@
     }
 
     function saveScoreToLeaderboard(pName, score, total, percent) {
+      const qKey = getActiveQuizKey();
       const key = getLeaderboardStorageKey();
       const list = getLeaderboard();
       const now = new Date();
       const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+      const hostName = activeQuizData?.creator || "Mai Tâm";
+
+      const details = (activeQuizData?.questions || []).map((q, qIdx) => {
+        const chosenIdx = playerAnswers[qIdx];
+        const isCorrect = chosenIdx === q.answerIndex;
+        return {
+          question: q.question,
+          options: q.options,
+          chosenIndex: chosenIdx,
+          chosenText: (chosenIdx !== null && chosenIdx !== undefined && q.options[chosenIdx] !== undefined) ? q.options[chosenIdx] : "Chưa chọn",
+          correctIndex: q.answerIndex,
+          correctText: q.options[q.answerIndex] !== undefined ? q.options[q.answerIndex] : "",
+          isCorrect: isCorrect
+        };
+      });
 
       list.unshift({
         id: Date.now(),
@@ -1202,12 +1932,21 @@
         score: score,
         total: total,
         percent: percent,
-        time: timeStr
+        time: timeStr,
+        playerAnswers: Array.isArray(playerAnswers) ? [...playerAnswers] : [],
+        details: details
       });
 
       if (list.length > 50) list.pop();
 
       localStorage.setItem(key, JSON.stringify(list));
+      if (qKey === "tam_master") {
+        localStorage.setItem("friendship_quiz_leaderboard_history", JSON.stringify(list));
+      }
+
+      // Tự động đồng bộ lên Google Sheet trong nền
+      syncScoreToCloud(qKey, hostName, pName, score, total, percent, timeStr);
+
       renderLeaderboardUI();
     }
 
@@ -1253,11 +1992,16 @@
             else if (idx === 2) medal = "🥉";
 
             return `
-              <div class="flex items-center justify-between p-2.5 rounded-xl bg-black/30 border border-white/15 text-xs text-white text-glow">
+              <div 
+                onclick="openPlayerDetailModal('${item.id || idx}')" 
+                class="flex items-center justify-between p-2.5 rounded-xl bg-black/30 hover:bg-pink-500/20 border border-white/15 hover:border-pink-400/40 text-xs text-white text-glow cursor-pointer transition transform hover:scale-[1.01] active:scale-[0.99]" 
+                title="Nhấn để xem chi tiết câu đúng / sai của ${escapeHtml(item.name)}"
+              >
                 <div class="flex items-center gap-2">
                   <span class="text-base">${medal}</span>
-                  <span class="font-bold text-sm text-pink-200">${escapeHtml(item.name)}</span>
+                  <span class="font-bold text-sm text-pink-200 underline decoration-pink-300/40">${escapeHtml(item.name)}</span>
                   <span class="text-[11px] text-white/70">(${item.time})</span>
+                  <span class="text-[10px] text-pink-300 bg-pink-500/20 px-1.5 py-0.5 rounded border border-pink-400/25">👁️ Chi tiết</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <span class="font-black px-2 py-0.5 rounded-lg bg-pink-500/35 border border-pink-300/40 text-white">
@@ -1277,8 +2021,16 @@
           let medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : (idx === 2 ? "🥉" : "🎖️"));
           const isCurrent = item.name === playerName;
           return `
-            <div class="flex items-center justify-between p-2 rounded-lg ${isCurrent ? 'bg-pink-500/40 border border-pink-300' : 'bg-black/25'} text-xs text-white text-glow">
-              <span class="font-bold">${medal} ${escapeHtml(item.name)} ${isCurrent ? '<span class="text-[10px] text-pink-200 font-black">(Cậu)</span>' : ''}</span>
+            <div 
+              onclick="openPlayerDetailModal('${item.id || idx}')" 
+              class="flex items-center justify-between p-2 rounded-lg ${isCurrent ? 'bg-pink-500/40 border border-pink-300' : 'bg-black/25 hover:bg-white/10'} text-xs text-white text-glow cursor-pointer transition" 
+              title="Nhấn để xem câu đúng / sai"
+            >
+              <span class="font-bold flex items-center gap-1.5">
+                ${medal} <span class="underline decoration-pink-300/40">${escapeHtml(item.name)}</span> 
+                ${isCurrent ? '<span class="text-[10px] text-pink-200 font-black">(Cậu)</span>' : ''}
+                <span class="text-[10px] text-pink-300">🔍</span>
+              </span>
               <span class="font-black text-pink-200">${item.score}/${item.total} (${item.percent}%)</span>
             </div>
           `;
@@ -1292,9 +2044,21 @@
           ownerListEl.innerHTML = `<div class="text-xs text-white/70 italic p-2">Chưa có bạn bè nào làm bài của ${escapeHtml(hostName)}.</div>`;
         } else {
           ownerListEl.innerHTML = list.map((item, idx) => `
-            <div class="flex items-center justify-between p-2 rounded-lg bg-black/30 text-xs text-white">
-              <span class="font-bold">${idx + 1}. ${escapeHtml(item.name)} <span class="text-white/60 font-normal">(${item.time})</span></span>
-              <span class="font-black text-emerald-300">${item.score}/${item.total} câu (${item.percent}%)</span>
+            <div 
+              onclick="openPlayerDetailModal('${item.id || idx}')" 
+              class="flex items-center justify-between p-2.5 rounded-xl bg-black/35 hover:bg-pink-500/20 border border-white/15 hover:border-pink-400/40 text-xs text-white cursor-pointer transition transform hover:scale-[1.01]"
+              title="Nhấn để xem chi tiết từng câu đúng / sai"
+            >
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-pink-200">${idx + 1}. ${escapeHtml(item.name)}</span>
+                <span class="text-white/60 font-normal">(${item.time})</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-pink-500/30 text-pink-100 font-bold border border-pink-300/30">
+                  👁️ Xem đúng/sai
+                </span>
+              </div>
+              <span class="font-black text-emerald-300 bg-emerald-950/40 px-2 py-0.5 rounded-lg border border-emerald-400/30">
+                ${item.score}/${item.total} câu (${item.percent}%)
+              </span>
             </div>
           `).join('');
         }
@@ -1435,6 +2199,9 @@
 
       renderQuestionsList();
       renderLeaderboardUI();
+
+      const cloudInput = document.getElementById('cloudSheetApiInput');
+      if (cloudInput) cloudInput.value = CLOUD_SHEET_API || "";
     }
 
     function exitOwnerMode() {
@@ -1810,6 +2577,12 @@
       renderLeaderboardUI();
       showScreen('screenQuiz');
 
+      // Tự động kiểm tra & đồng bộ điểm số nếu mở qua link gửi Zalo/Messenger
+      checkUrlSyncScore();
+
+      // Tự động tải bảng thành tích mới nhất từ Google Sheets Cloud
+      loadScoresFromCloud();
+
       // Thử phát nhạc ngay lập tức
       startBGMImmediately();
 
@@ -1976,6 +2749,10 @@
 
       document.getElementById('resPlayerName').textContent = playerName;
       document.getElementById('resHostName').textContent = hostName;
+      const shareHostEl = document.getElementById('resShareHostName');
+      if (shareHostEl) shareHostEl.textContent = hostName;
+      const shareBtnHostEl = document.getElementById('resShareBtnHost');
+      if (shareBtnHostEl) shareBtnHostEl.textContent = hostName;
       document.getElementById('scoreText').textContent = score;
       document.getElementById('totalQuestionsText').textContent = total;
       document.getElementById('scorePercentBadge').textContent = `Đạt ${percent}% mức độ thấu hiểu`;
