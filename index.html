@@ -1039,27 +1039,30 @@
 
     /* ==============================================================
        DANH SÁCH 3 BÀI NHẠC KHÔNG LỜI DU DƯƠNG (INSTRUMENTAL)
-       1. Fall Rain (July)
-       2. Sacred Play Secret Place (Matryoshka)
-       3. Spirited Away (One Summer's Day - Joe Hisaishi)
+       1. Fall Rain (July) - 2AOTAh1jfaY
+       2. Sacred Play Secret Place (Matryoshka) - XX2gPs44fxg
+       3. Spirited Away (One Summer's Day Piano Cover - Torby Brand) - 1xUBXpYVCls
     =============================================================== */
     const PLAYLIST = [
       {
         title: "Fall Rain",
         artist: "July",
         videoId: "2AOTAh1jfaY",
+        backupId: "2AOTAh1jfaY",
         desc: "Piano Instrumental"
       },
       {
         title: "Sacred Play Secret Place",
         artist: "Matryoshka",
         videoId: "XX2gPs44fxg",
+        backupId: "1xUBXpYVCls",
         desc: "Instrumental"
       },
       {
         title: "Spirited Away",
         artist: "Joe Hisaishi",
-        videoId: "X05L1C5768s",
+        videoId: "1xUBXpYVCls", // Torby Brand Piano Solo (100% cho phép nhúng trên mọi web)
+        backupId: "XqwSAFXpmx8", // TutorialsByHugo Piano
         desc: "One Summer's Day Piano"
       }
     ];
@@ -1093,22 +1096,18 @@
 
       updateMusicUI(true);
 
-      if (isYtReady && ytPlayer) {
+      if (isYtReady && ytPlayer && typeof ytPlayer.loadVideoById === 'function') {
         try {
-          if (typeof ytPlayer.loadVideoById === 'function') {
-            ytPlayer.loadVideoById({
-              videoId: track.videoId,
-              startSeconds: 0
-            });
-            ytPlayer.unMute();
-            ytPlayer.setVolume(55);
-            ytPlayer.playVideo();
-          }
-        } catch(e) {}
+          ytPlayer.loadVideoById(track.videoId, 0);
+          ytPlayer.unMute();
+          ytPlayer.setVolume(55);
+        } catch(e) {
+          console.warn("Load video error:", e);
+        }
       }
       closeMusicRecommendation();
       if (showToastMsg) {
-        showToast(`Đang phát: ${track.title} (${track.artist}) 🎵`, "🎶");
+        showToast(`Đang phát: ${track.title} 🎵`, "🎶");
       }
     }
 
@@ -1142,7 +1141,11 @@
         } else {
           ytPlayer.unMute();
           ytPlayer.setVolume(55);
-          ytPlayer.playVideo();
+          if (state === -1 || state === YT.PlayerState.ENDED || state === YT.PlayerState.CUED) {
+            ytPlayer.loadVideoById(PLAYLIST[currentTrackIndex].videoId, 0);
+          } else {
+            ytPlayer.playVideo();
+          }
           updateMusicUI(true);
           closeMusicRecommendation();
           showToast(`Đang phát: ${PLAYLIST[currentTrackIndex].title} 🎵`, "🎶");
@@ -1211,6 +1214,22 @@
             } else if (event.data === YT.PlayerState.PAUSED) {
               updateMusicUI(false);
             }
+          },
+          'onError': function(event) {
+            console.warn('YouTube Player Error Code:', event.data);
+            const track = PLAYLIST[currentTrackIndex];
+            // Mã lỗi 101/150 là video bị chủ sở hữu chặn phát trên web ngoài
+            if (track && track.backupId && track.backupId !== track.videoId) {
+              try {
+                ytPlayer.loadVideoById(track.backupId, 0);
+                ytPlayer.unMute();
+                ytPlayer.setVolume(55);
+                return;
+              } catch(e) {}
+            }
+            // Tự động nhảy bài tiếp theo nếu bị lỗi
+            showToast(`Bài ${track.title} bị hạn chế, tự chuyển bài tiếp...`, "⚠️");
+            setTimeout(() => playNextTrack(), 500);
           }
         }
       });
