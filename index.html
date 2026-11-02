@@ -1,0 +1,1995 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Friendship Quiz - Thử Xem Cậu Hiểu Mai Tâm Đến Mức Nào Nhé!</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          animation: {
+            'float': 'float 3.5s ease-in-out infinite',
+            'shake': 'shake 0.4s ease-in-out',
+            'wave-bar': 'waveBar 1.2s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-6px)' },
+            },
+            shake: {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '20%, 60%': { transform: 'translateX(-8px)' },
+              '40%, 80%': { transform: 'translateX(8px)' },
+            },
+            waveBar: {
+              '0%': { height: '20%' },
+              '100%': { height: '100%' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Chữ có viền đổ bóng sắc nét để luôn đọc rõ từng nét trên nền cảnh vật video */
+    .text-glow {
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95), 0 2px 10px rgba(0, 0, 0, 0.9);
+    }
+    .text-title-glow {
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.95), 0 0 20px rgba(236, 72, 153, 0.6);
+    }
+
+    /* KHUNG MỜ NHẤT CÓ THỂ (SIÊU TRONG SUỐT - ULTRA TRANSPARENT GLASS) */
+    .ultra-transparent-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(2.5px);
+      -webkit-backdrop-filter: blur(2.5px);
+      border-radius: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
+    }
+
+    /* Hộp con trong suốt siêu mỏng */
+    .ultra-glass-box {
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(2px);
+      -webkit-backdrop-filter: blur(2px);
+      transition: all 0.2s ease;
+    }
+    .ultra-glass-box:hover {
+      background: rgba(236, 72, 153, 0.25);
+      border-color: rgba(244, 114, 182, 0.6);
+    }
+
+    /* Ô nhập liệu trong suốt */
+    .glass-input-field {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      backdrop-filter: blur(3px);
+      transition: all 0.2s ease;
+    }
+    .glass-input-field:focus {
+      background: rgba(0, 0, 0, 0.6);
+      border-color: #f472b6;
+      box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.35);
+    }
+
+    /* Hiệu ứng chuyển màn hình */
+    .screen-transition {
+      transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .screen-hidden {
+      display: none !important;
+      opacity: 0;
+      transform: translateY(12px) scale(0.99);
+    }
+    .screen-visible {
+      display: block;
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    /* Thanh cuộn mảnh nhẹ */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(236, 72, 153, 0.8);
+    }
+
+    /* Confetti Canvas */
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 50;
+    }
+  </style>
+</head>
+<body class="bg-black text-white min-h-screen relative font-sans selection:bg-pink-500 selection:text-white flex flex-col justify-between overflow-x-hidden">
+
+  <!-- ==================== BACKGROUND VIDEO LAYER ==================== -->
+  <!-- Video giữ độ sáng tự nhiên 100%, không bị che bởi lớp tối, nhìn rõ từng cảnh vật -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none -z-20">
+    <video 
+      id="bgVideo" 
+      autoplay 
+      muted 
+      playsinline
+      class="w-full h-full object-cover transition-opacity duration-1000 ease-in-out opacity-100"
+    >
+      <source src="background.mov" type="video/quicktime">
+      <source src="background.mov" type="video/mp4">
+      Trình duyệt không hỗ trợ phát video.
+    </video>
+  </div>
+
+  <!-- Lớp phủ siêu nhẹ để đảm bảo chữ đọc được mà không làm tối cảnh vật -->
+  <div class="fixed inset-0 bg-black/10 pointer-events-none -z-10"></div>
+
+  <!-- Canvas Pháo hoa chúc mừng -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- ==================== PLAYER NHẠC NỀN "FALL RAIN" (JULY) ==================== -->
+  <!-- YouTube IFrame Player ngầm phát trực tiếp bản gốc Fall Rain - July (không bị display:none) -->
+  <div id="ytPlayerContainer" style="position: fixed; bottom: 0; right: 0; width: 1px; height: 1px; opacity: 0.001; pointer-events: none; z-index: -9999;">
+    <div id="ytPlayer"></div>
+  </div>
+  <!-- Thanh thông báo kích hoạt âm thanh siêu nhẹ nếu trình duyệt chặn autoplay ban đầu -->
+  <div id="musicNoticeBanner" class="hidden fixed top-3 left-1/2 -translate-x-1/2 z-50 transition-all duration-300">
+    <button onclick="startBGMImmediately(); dismissMusicNotice();" class="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-600 hover:scale-105 border border-white/50 text-white text-xs font-black shadow-2xl flex items-center gap-2 animate-bounce cursor-pointer">
+      <span class="text-base">🎵</span>
+      <span>Click vào đây hoặc chạm bất kỳ đâu để bật nhạc nền Fall Rain 🌧️</span>
+    </button>
+  </div>
+
+  <!-- ==================== HEADER THANH ĐIỀU HƯỚNG ==================== -->
+  <header class="w-full max-w-4xl mx-auto px-4 pt-4 pb-2 flex flex-wrap items-center justify-between gap-3 z-10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-500 via-rose-400 to-indigo-500 flex items-center justify-center shadow-lg shadow-pink-500/50 text-white font-black text-xl animate-float">
+        🌧️
+      </div>
+      <div>
+        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-white text-title-glow flex items-center gap-2">
+          Friendship Quiz
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-pink-500/30 text-pink-100 border border-pink-300/40 font-bold tracking-normal uppercase shadow">2026</span>
+        </h1>
+        <p class="text-xs text-white font-bold text-glow">Thử xem ai là bạn thân đích thực! 💖</p>
+      </div>
+    </div>
+
+    <!-- Thanh nút điều khiển: Nhạc Fall Rain & Dành cho chủ nhân -->
+    <div class="flex items-center gap-2">
+      <!-- Nút Về Quiz của Mai Tâm (chỉ hiện khi đang xem quiz do người khác tạo) -->
+      <button 
+        id="btnBackToTamQuiz" 
+        onclick="loadTamDefaultQuiz()" 
+        title="Quay lại bài quiz gốc của Mai Tâm" 
+        class="hidden text-xs md:text-sm px-3 py-1.5 rounded-xl bg-purple-600/80 hover:bg-purple-600 border border-white/30 transition text-white flex items-center gap-1 font-bold text-glow shadow"
+      >
+        <span>🌸</span>
+        <span>Quiz của Mai Tâm</span>
+      </button>
+
+      <!-- Nút Tự Tạo Quiz Dành Cho Bạn Bè (Nhấn lần 2 để thoát ra ngoài sảnh) -->
+      <button 
+        id="btnCreateOwnQuizNav" 
+        onclick="toggleCreateOwnQuiz()" 
+        title="Tự tạo thử thách trắc nghiệm của riêng bạn (Bấm lần nữa để thoát)" 
+        class="text-xs md:text-sm px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 border border-white/30 transition text-white flex items-center gap-1.5 font-bold shadow-lg shadow-pink-500/30 text-glow cursor-pointer"
+      >
+        <span id="btnCreateIcon">✨</span>
+        <span id="btnCreateText" class="hidden sm:inline">Tạo quiz của bạn</span>
+        <span id="btnCreateTextMobile" class="sm:hidden">Tạo quiz</span>
+      </button>
+
+      <!-- NÚT ĐIỀU KHIỂN NHẠC "FALL RAIN" (JULY) -->
+      <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/35 hover:bg-black/55 border border-white/25 backdrop-blur-md transition shadow text-xs">
+        <button id="btnMusicToggle" onclick="toggleBGM()" title="Bật / Tắt nhạc Fall Rain (July)" class="flex items-center gap-1.5 font-bold text-white text-glow">
+          <span id="musicStatusIcon" class="text-sm">🎵</span>
+          <span id="musicBtnText" class="hidden sm:inline">Fall Rain</span>
+          <!-- Sound wave visualizer mini -->
+          <div id="soundWaves" class="flex items-end gap-0.5 h-3.5 w-3.5">
+            <span class="w-0.5 bg-pink-400 rounded-full h-full animate-wave-bar" style="animation-delay: 0.1s;"></span>
+            <span class="w-0.5 bg-pink-300 rounded-full h-full animate-wave-bar" style="animation-delay: 0.3s;"></span>
+            <span class="w-0.5 bg-pink-400 rounded-full h-full animate-wave-bar" style="animation-delay: 0.2s;"></span>
+          </div>
+        </button>
+      </div>
+
+      <!-- Nút vào khu vực Chủ Nhân Mai Tâm (Bảo vệ bằng mật khẩu) -->
+      <button 
+        id="btnOwnerArea" 
+        onclick="openPasswordModal()" 
+        title="Dành riêng cho chủ nhân Mai Tâm" 
+        class="text-xs md:text-sm px-3 py-1.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/25 transition text-slate-200 flex items-center gap-1.5 font-bold shadow text-glow"
+      >
+        <span>🔒</span>
+        <span id="ownerBtnLabel" class="hidden sm:inline">Dành cho chủ nhân</span>
+      </button>
+
+      <!-- Nút thoát khỏi khu vực chủ nhân -->
+      <button 
+        id="btnExitOwner" 
+        onclick="exitOwnerMode()" 
+        title="Quay lại giao diện thử thách" 
+        class="hidden text-xs md:text-sm px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/30 transition text-white flex items-center gap-1 font-bold text-glow"
+      >
+        <span>👁️</span>
+        <span>Xem bài quiz</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ==================== VÙNG CHỨA NỘI DUNG CHÍNH (SPA SCREENS) ==================== -->
+  <main class="w-full max-w-3xl mx-auto px-4 py-3 md:py-4 flex-grow flex items-center justify-center z-10">
+
+    <!-- ==============================================================
+         MÀN HÌNH 2: GIAO DIỆN LÀM BÀI (MẶC ĐỊNH CHO BẠN BÈ)
+    =============================================================== -->
+    <section id="screenQuiz" class="screen-transition screen-visible w-full">
+      <div class="ultra-transparent-card p-5 md:p-8">
+        
+        <!-- BƯỚC 2.1: Nhập tên người chơi & Bảng thành tích bạn bè -->
+        <div id="quizPlayerStep" class="text-center py-2">
+          <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-pink-500 to-indigo-600 flex items-center justify-center text-3xl shadow-xl shadow-pink-500/40 animate-float">
+            💖
+          </div>
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-black bg-pink-500/30 text-pink-100 border border-pink-300/40 mb-2 text-glow">
+            Thử Thách Tình Bạn
+          </span>
+
+          <!-- Tiêu đề theo đúng yêu cầu -->
+          <h2 id="quizTitleHost" class="text-2xl md:text-3xl font-black text-white mb-2 text-title-glow leading-snug">
+            Thử xem cậu hiểu <span id="displayHostName" class="text-pink-300 underline decoration-pink-400 decoration-wavy">Mai Tâm</span> đến mức nào nhé
+          </h2>
+          <p class="text-slate-100 text-sm max-w-md mx-auto mb-6 font-semibold text-glow">
+            Trả lời các câu hỏi để chứng minh hai đứa là bạn thân chí cốt nha!
+          </p>
+
+          <div class="max-w-md mx-auto text-left mb-6">
+            <label class="block text-sm font-black text-white mb-2 text-glow">
+              🙋 Tên của cậu (người chơi): <span class="text-pink-300">*</span>
+            </label>
+            <input 
+              type="text" 
+              id="playerNameInput" 
+              placeholder="Nhập tên hoặc biệt danh của cậu..." 
+              class="glass-input-field w-full px-4 py-3 rounded-xl placeholder-slate-300 text-base font-bold outline-none"
+              maxlength="40"
+              onkeydown="if(event.key === 'Enter') startPlayingQuiz();"
+            >
+            <p id="playerNameError" class="text-rose-300 text-xs mt-1.5 hidden flex items-center gap-1 font-bold text-glow">
+              <span>⚠️</span> Nhập tên để Mai Tâm biết ai vừa làm bài nhé!
+            </p>
+          </div>
+
+          <button 
+            type="button" 
+            onclick="startPlayingQuiz()"
+            class="px-8 py-3.5 rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-black text-base shadow-xl shadow-pink-500/50 transition transform hover:-translate-y-0.5 active:translate-y-0 inline-flex items-center gap-2"
+          >
+            Bắt đầu thử thách! 🚀
+          </button>
+
+          <!-- BẢNG DANH SÁCH BẠN BÈ ĐÃ THAM GIA & ĐIỂM SỐ -->
+          <div class="mt-8 pt-5 border-t border-white/20 text-left">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2 text-glow">
+                <span>🏆</span> Bảng thành tích bạn bè đã tham gia:
+              </h3>
+              <span id="leaderboardCountBadge" class="text-xs bg-pink-500/30 text-pink-100 font-bold px-2.5 py-0.5 rounded-full border border-pink-300/40 text-glow">
+                0 người
+              </span>
+            </div>
+
+            <div id="welcomeLeaderboardList" class="space-y-2 max-h-52 overflow-y-auto pr-1">
+              <!-- Render danh sách người chơi và điểm số tại đây -->
+            </div>
+          </div>
+        </div>
+
+        <!-- BƯỚC 2.2: Làm bài từng câu hỏi -->
+        <div id="quizActiveStep" class="hidden">
+          
+          <!-- Thanh tiến trình & Header câu hỏi -->
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-black uppercase tracking-wider text-pink-200 text-glow" id="quizHostBadge">
+              Friendship Quiz từ Mai Tâm
+            </span>
+            <span class="text-xs font-bold text-white bg-black/40 px-3 py-1 rounded-full border border-white/30 text-glow" id="questionProgressText">
+              Câu 1 / 5
+            </span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full bg-black/30 border border-white/20 rounded-full h-2.5 mb-6 overflow-hidden">
+            <div id="quizProgressBar" class="bg-gradient-to-r from-pink-500 via-rose-400 to-indigo-500 h-2.5 rounded-full transition-all duration-300" style="width: 20%;"></div>
+          </div>
+
+          <!-- Vùng hiển thị câu hỏi đang kích hoạt -->
+          <div id="questionDisplayCard" class="transition-all duration-300">
+            <h3 id="currentQuestionTitle" class="text-lg md:text-2xl font-black text-white mb-5 leading-snug text-title-glow">
+              Nội dung câu hỏi sẽ hiển thị ở đây
+            </h3>
+
+            <!-- 4 Thẻ đáp án A, B, C, D (cho phép chọn & đổi đáp án thoải mái) -->
+            <div class="grid grid-cols-1 gap-3" id="optionsContainer">
+              <!-- Render động 4 options -->
+            </div>
+            
+            <p class="text-xs text-white text-center mt-3 font-semibold text-glow italic">
+              💡 Cậu có thể click chọn lại đáp án bất kỳ lúc nào trước khi bấm "Câu tiếp / Nộp bài".
+            </p>
+          </div>
+
+          <!-- Nút điều hướng Trước / Sau / Nộp bài -->
+          <div class="mt-6 pt-5 border-t border-white/20 flex items-center justify-between gap-3">
+            <button 
+              id="btnPrevQuestion"
+              type="button" 
+              onclick="goToPrevQuestion()"
+              class="px-4 py-2.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/30 text-white text-sm font-bold transition disabled:opacity-30 disabled:pointer-events-none flex items-center gap-1.5 text-glow"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+              Câu trước
+            </button>
+
+            <button 
+              id="btnNextQuestion"
+              type="button" 
+              onclick="goToNextQuestion()"
+              class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-black text-sm shadow-xl shadow-pink-500/40 transition flex items-center gap-1.5"
+            >
+              <span>Câu tiếp</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==============================================================
+         MÀN HÌNH 1: TẠO/CHỈNH SỬA CÂU HỎI (BẢO VỆ BẰNG MẬT KHẨU)
+    =============================================================== -->
+    <section id="screenCreate" class="screen-transition screen-hidden w-full">
+      <div class="ultra-transparent-card p-5 md:p-8 relative">
+        <!-- Nút đóng/thoát nhanh về sảnh chính -->
+        <button 
+          type="button" 
+          onclick="backToLobby()" 
+          title="Thoát ra ngoài sảnh chính" 
+          class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/40 hover:bg-rose-600/80 border border-white/25 text-white flex items-center justify-center font-black text-sm transition shadow-lg cursor-pointer text-glow z-20"
+        >
+          ✕
+        </button>
+
+        <!-- Header Chế độ Chủ Nhân -->
+        <div id="ownerAdminHeader" class="flex flex-wrap items-center justify-between gap-2 border-b border-white/20 pb-4 mb-6">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-xs font-black uppercase tracking-wider text-emerald-300 text-glow">
+              Chế độ Chủ Nhân Mai Tâm (Đã xác thực)
+            </span>
+          </div>
+          <div class="flex items-center gap-3">
+            <button 
+              type="button" 
+              onclick="manualRecoverQuestions()" 
+              class="text-xs text-emerald-300 hover:text-emerald-200 underline font-bold text-glow flex items-center gap-1"
+              title="Tìm và khôi phục lại toàn bộ câu hỏi đã lưu trước đó"
+            >
+              <span>🔄</span> Khôi phục câu hỏi của Tâm
+            </button>
+            <button 
+              type="button" 
+              onclick="promptChangePassword()" 
+              class="text-xs text-pink-300 hover:text-pink-200 underline font-bold text-glow"
+            >
+              🔑 Đổi mật khẩu
+            </button>
+          </div>
+        </div>
+
+        <div class="text-center mb-6">
+          <h2 id="screenCreateTitle" class="text-2xl md:text-3xl font-black text-white text-title-glow">
+            Quản Lý & Chỉnh Sửa Bộ Câu Hỏi
+          </h2>
+          <p id="screenCreateDesc" class="text-slate-100 text-sm mt-1 max-w-lg mx-auto font-semibold text-glow">
+            Tùy biến câu hỏi & đáp án, chọn đáp án đúng rồi bấm "Lưu & Lấy Link" để gửi bạn bè thử sức nhé!
+          </p>
+        </div>
+
+        <!-- Nhập tên chủ nhân -->
+        <div class="mb-6">
+          <label id="creatorNameLabel" class="block text-sm font-black text-white mb-2 text-glow">
+            👤 Tên chủ nhân bài quiz: <span class="text-pink-300">*</span>
+          </label>
+          <input 
+            type="text" 
+            id="creatorNameInput" 
+            value="Mai Tâm"
+            oninput="creatorName = this.value; autoSaveQuestions();"
+            placeholder="Nhập tên (Ví dụ: Mai Tâm...)" 
+            class="glass-input-field w-full px-4 py-3 rounded-xl placeholder-slate-300 text-base font-bold outline-none"
+            maxlength="40"
+          >
+          <p id="creatorNameError" class="text-rose-300 text-xs mt-1.5 hidden flex items-center gap-1 font-bold text-glow">
+            <span>⚠️</span> Vui lòng nhập tên!
+          </p>
+        </div>
+
+        <!-- Danh sách câu hỏi -->
+        <div class="space-y-5" id="questionsContainer">
+          <!-- Render danh sách câu hỏi tại đây -->
+        </div>
+
+        <!-- Nút hành động cho chủ nhân -->
+        <div class="mt-6 pt-5 border-t border-white/20 flex flex-col sm:flex-row gap-3 items-center justify-between">
+          <button 
+            type="button" 
+            onclick="addNewQuestion()"
+            class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-black/40 hover:bg-black/60 border border-white/30 text-white text-sm font-bold transition flex items-center justify-center gap-2 text-glow"
+          >
+            <svg class="w-4 h-4 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+            Thêm câu hỏi mới
+          </button>
+
+          <button 
+            id="btnSaveQuiz"
+            type="button" 
+            onclick="saveAndGenerateQuizLink()"
+            class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-black text-base shadow-xl shadow-pink-500/50 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
+          >
+            <span>💾</span>
+            Lưu & Lấy Link Thử Thách
+          </button>
+        </div>
+
+        <!-- Khu vực quản lý lịch sử người chơi dành cho chủ nhân -->
+        <div id="ownerHistorySection" class="mt-8 pt-5 border-t border-white/20 text-left">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2 text-glow">
+              <span>👥</span> Danh sách bạn bè đã làm bài:
+            </h3>
+            <button 
+              type="button" 
+              onclick="clearLeaderboardHistory()" 
+              class="text-xs text-rose-300 hover:text-rose-200 underline font-bold text-glow"
+            >
+              🗑️ Xóa danh sách này
+            </button>
+          </div>
+          <div id="ownerLeaderboardList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+            <!-- Render danh sách cho chủ nhân -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==============================================================
+         MÀN HÌNH 3: KẾT QUẢ & CHẤM ĐIỂM
+    =============================================================== -->
+    <section id="screenResult" class="screen-transition screen-hidden w-full">
+      <div class="ultra-transparent-card p-5 md:p-8 text-center">
+        
+        <!-- Huy hiệu kết quả -->
+        <div id="resultBadgeIcon" class="w-20 h-20 mx-auto mb-3 rounded-3xl bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 flex items-center justify-center text-4xl shadow-2xl shadow-pink-500/50 animate-bounce">
+          🎉
+        </div>
+
+        <p class="text-xs uppercase font-black tracking-widest text-pink-200 mb-1 text-glow">Friendship Quiz Result</p>
+        <h2 class="text-2xl md:text-3xl font-black text-white mb-2 text-title-glow">
+          Kết Quả Của <span id="resPlayerName" class="text-pink-300">Cậu</span>
+        </h2>
+        <p class="text-slate-100 text-sm max-w-md mx-auto mb-5 font-bold text-glow">
+          Đối với bộ câu hỏi của <span id="resHostName" class="font-black text-pink-200 underline decoration-pink-300">Mai Tâm</span>
+        </p>
+
+        <!-- Khung điểm số phần trăm nổi bật -->
+        <div class="inline-flex flex-col items-center justify-center px-8 py-4 rounded-2xl bg-white/10 border border-white/30 mb-5 backdrop-blur-sm shadow-lg">
+          <div class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-rose-100 to-amber-200">
+            <span id="scoreText">0</span> / <span id="totalQuestionsText">0</span>
+          </div>
+          <span id="scorePercentBadge" class="text-xs font-black px-3 py-1 mt-2 rounded-full bg-pink-500/40 text-white border border-pink-300/50 text-glow">
+            Đúng 0%
+          </span>
+        </div>
+
+        <!-- Dòng nhận xét dí dỏm -->
+        <div class="p-4 rounded-xl bg-black/35 border border-pink-300/35 mb-6 max-w-lg mx-auto backdrop-blur-sm">
+          <p id="funFeedbackText" class="text-base md:text-lg font-black text-pink-100 text-glow">
+            "Nhận xét kết quả..."
+          </p>
+        </div>
+
+        <!-- BẢNG XẾP HẠNG BẠN BÈ TẠI MÀN HÌNH KẾT QUẢ -->
+        <div class="text-left mb-6 p-4 rounded-2xl bg-black/30 border border-white/20 backdrop-blur-sm">
+          <h4 class="text-sm font-black text-white uppercase tracking-wider mb-2.5 flex items-center gap-2 text-glow">
+            <span>🏆</span> Bảng thành tích bạn bè:
+          </h4>
+          <div id="resultLeaderboardList" class="space-y-2 max-h-44 overflow-y-auto pr-1">
+            <!-- Render danh sách xếp hạng -->
+          </div>
+        </div>
+
+        <!-- Danh sách chi tiết câu trả lời -->
+        <div class="text-left mb-7">
+          <h4 class="text-sm font-black text-white uppercase tracking-wider mb-3 flex items-center gap-2 text-glow">
+            <span>📋</span> Chi tiết đáp án của cậu:
+          </h4>
+          <div id="resultAnswersReview" class="space-y-3 max-h-60 overflow-y-auto pr-2">
+            <!-- Render danh sách đáp án -->
+          </div>
+        </div>
+
+        <!-- Các nút hành động cuối -->
+        <div class="flex flex-col sm:flex-row gap-3 justify-center items-center pt-4 border-t border-white/20">
+          <button 
+            type="button" 
+            onclick="backToLobby()"
+            class="w-full sm:w-auto px-5 py-3 rounded-xl bg-white/20 hover:bg-white/30 border border-white/30 text-white font-black text-sm shadow-xl shadow-white/10 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
+          >
+            <span>🏠</span>
+            Ra ngoài sảnh chính
+          </button>
+
+          <button 
+            type="button" 
+            onclick="openCreateOwnQuizScreen()"
+            class="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-black text-sm shadow-xl shadow-pink-500/40 transition transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2"
+          >
+            <span>✨</span>
+            Tạo câu hỏi dành cho bạn
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL NHẬP MẬT KHẨU CHỦ NHÂN ==================== -->
+  <div id="passwordModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="ultra-transparent-card bg-slate-900/90 max-w-sm w-full p-6 text-center transform scale-95 transition-transform duration-300" id="passwordModalBox">
+      <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-pink-500 to-indigo-500 flex items-center justify-center text-2xl shadow-xl shadow-pink-500/40">
+        🔐
+      </div>
+      <h3 class="text-xl font-black text-white mb-1 text-title-glow">Xác Thực Chủ Nhân</h3>
+      <p class="text-slate-200 text-xs mb-4 font-medium text-glow">
+        Nhập mật khẩu để tùy chỉnh câu hỏi, đáp án và lấy link chia sẻ.
+      </p>
+
+      <div class="mb-4 text-left">
+        <label class="block text-xs font-bold text-white mb-1 text-glow">Mật khẩu:</label>
+        <input 
+          type="password" 
+          id="ownerPasswordInput" 
+          placeholder="Mật khẩu mặc định: 123456" 
+          class="glass-input-field w-full px-3 py-2.5 rounded-lg text-sm text-center font-bold tracking-widest outline-none"
+          maxlength="30"
+          onkeydown="if(event.key === 'Enter') verifyOwnerPassword();"
+        >
+        <p id="ownerPassError" class="text-rose-400 text-xs mt-1.5 hidden flex items-center gap-1 font-bold">
+          <span>❌</span> Mật khẩu không chính xác!
+        </p>
+      </div>
+
+      <div class="flex gap-2">
+        <button 
+          onclick="verifyOwnerPassword()" 
+          class="flex-1 py-2.5 rounded-lg bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white text-xs font-bold transition shadow-lg shadow-pink-500/30"
+        >
+          Xác nhận mở khoá 🔓
+        </button>
+        <button 
+          onclick="closePasswordModal()" 
+          class="px-4 py-2.5 rounded-lg bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-semibold transition"
+        >
+          Huỷ
+        </button>
+      </div>
+      
+      <p class="text-[11px] text-slate-300 mt-3 font-medium">
+        💡 Mật khẩu mặc định: <span class="font-bold text-pink-300">123456</span>
+      </p>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL XUẤT LINK CHIA SẺ ==================== -->
+  <div id="shareModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="ultra-transparent-card bg-slate-900/90 max-w-md w-full p-6 text-center transform scale-95 transition-transform duration-300" id="shareModalBox">
+      <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-pink-500 to-indigo-500 flex items-center justify-center text-2xl shadow-xl shadow-pink-500/40">
+        🔗
+      </div>
+      <h3 class="text-xl font-black text-white mb-1 text-title-glow">Link Đã Được Lưu & Sẵn Sàng!</h3>
+      <p class="text-slate-200 text-xs mb-4 font-medium text-glow">
+        Gửi link này cho bạn bè. Khi mở ra, bạn bè sẽ thấy ngay tiêu đề <b>"Thử xem cậu hiểu Mai Tâm đến mức nào nhé"</b>!
+      </p>
+
+      <div class="relative mb-4">
+        <input 
+          type="text" 
+          id="generatedLinkInput" 
+          readonly 
+          class="glass-input-field w-full px-3 py-2.5 pr-24 rounded-lg text-xs text-pink-300 font-mono outline-none select-all"
+        >
+        <button 
+          id="btnCopyLink"
+          onclick="copyGeneratedLink()" 
+          class="absolute right-1 top-1 bottom-1 px-3 bg-pink-600 hover:bg-pink-500 text-white text-xs font-bold rounded-md transition flex items-center gap-1 shadow"
+        >
+          <span id="copyBtnText">Sao chép</span>
+        </button>
+      </div>
+
+      <div class="flex gap-2">
+        <button 
+          onclick="tryCreatedQuiz()" 
+          class="flex-1 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition shadow-lg shadow-indigo-600/30"
+        >
+          🎮 Thử làm bài ngay
+        </button>
+        <button 
+          onclick="closeShareModal()" 
+          class="px-4 py-2.5 rounded-lg bg-white/20 hover:bg-white/30 border border-white/30 text-white text-xs font-semibold transition"
+        >
+          Đóng
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Thông báo nhỏ (Toast Notification) -->
+  <div id="toastNotification" class="fixed bottom-6 right-6 z-50 pointer-events-none transform translate-y-12 opacity-0 transition-all duration-300 px-4 py-3 rounded-xl bg-slate-900/90 border border-pink-400/50 text-white text-sm font-bold shadow-2xl flex items-center gap-2 backdrop-blur-md">
+    <span id="toastIcon">✅</span>
+    <span id="toastMessage">Thông báo</span>
+  </div>
+
+  <!-- ==================== JAVASCRIPT LOGIC CHÍNH ==================== -->
+  <script>
+    /* ==============================================================
+       1. CẤU HÌNH & XỬ LÝ VIDEO BACKGROUND (FADE OUT & LOOP SMOOTH)
+       TẮT VĨNH VIỄN ÂM THANH GỐC CỦA VIDEO NỀN
+    =============================================================== */
+    const bgVideo = document.getElementById('bgVideo');
+    let isFadingOut = false;
+
+    if (bgVideo) {
+      bgVideo.muted = true;
+      bgVideo.volume = 0;
+
+      bgVideo.addEventListener('timeupdate', () => {
+        if (!bgVideo.duration) return;
+        const timeLeft = bgVideo.duration - bgVideo.currentTime;
+        if (timeLeft <= 1.0 && !isFadingOut) {
+          isFadingOut = true;
+          bgVideo.style.opacity = '0';
+        }
+      });
+
+      bgVideo.addEventListener('ended', () => {
+        bgVideo.currentTime = 0;
+        bgVideo.muted = true;
+        bgVideo.volume = 0;
+        bgVideo.play().then(() => {
+          setTimeout(() => {
+            bgVideo.style.opacity = '1';
+            isFadingOut = false;
+          }, 150);
+        }).catch(err => {
+          console.warn("Autoplay retry error:", err);
+          bgVideo.style.opacity = '1';
+          isFadingOut = false;
+        });
+      });
+
+      bgVideo.play().catch(e => {
+        console.log("Trình duyệt chờ tương tác để bật video:", e);
+      });
+    }
+
+    /* Quay trở lại sảnh chính (Trang bắt đầu thử thách) */
+    function backToLobby() {
+      currentQuestionIndex = 0;
+      playerAnswers = [];
+      isGuestCreatorMode = false;
+      setupQuizWelcomeUI();
+      renderLeaderboardUI();
+      showScreen('screenQuiz');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /* ==============================================================
+       CHUYỂN ĐỔI QUA LẠI: TẠO QUIZ CỦA BẠN & THOÁT RA SẢNH CHÍNH
+       Khi đang ở màn hình tạo quiz, nhấn lần nữa sẽ lập tức thoát ra sảnh!
+    =============================================================== */
+    function toggleCreateOwnQuiz() {
+      const screenCreate = document.getElementById('screenCreate');
+      if (screenCreate && !screenCreate.classList.contains('screen-hidden')) {
+        // Đang ở trong giao diện tạo quiz -> Nhấn lần 2 thì thoát ngay ra ngoài sảnh!
+        backToLobby();
+        showToast("Đã quay lại sảnh chính", "🏠");
+      } else {
+        // Chưa ở giao diện tạo quiz -> Mở giao diện tạo quiz
+        openCreateOwnQuizScreen();
+      }
+    }
+
+    /* ==============================================================
+       2. PHÁT NHẠC NỀN "FALL RAIN" (JULY) BẢN GỐC CHUẨN
+    =============================================================== */
+    let isMusicPlaying = false;
+    let ytPlayer = null;
+    let isYtReady = false;
+
+    function showMusicNotice() {
+      if (isMusicPlaying) return;
+      const b = document.getElementById('musicNoticeBanner');
+      if (b) b.classList.remove('hidden');
+    }
+
+    function dismissMusicNotice() {
+      const b = document.getElementById('musicNoticeBanner');
+      if (b) b.classList.add('hidden');
+    }
+
+    function updateMusicUI(isPlaying) {
+      isMusicPlaying = isPlaying;
+      const soundWaves = document.getElementById('soundWaves');
+      const icon = document.getElementById('musicStatusIcon');
+      
+      if (isPlaying) {
+        if (icon) icon.textContent = '🎶';
+        if (soundWaves) soundWaves.classList.remove('hidden');
+      } else {
+        if (icon) icon.textContent = '🔇';
+        if (soundWaves) soundWaves.classList.add('hidden');
+      }
+    }
+
+    function startBGMImmediately() {
+      if (isYtReady && ytPlayer && typeof ytPlayer.playVideo === 'function') {
+        try {
+          ytPlayer.unMute();
+          ytPlayer.setVolume(55); // Âm lượng 55% dịu êm
+          ytPlayer.playVideo();
+          updateMusicUI(true);
+          dismissMusicNotice();
+        } catch(e) {}
+      }
+    }
+
+    function toggleBGM() {
+      if (isYtReady && ytPlayer && typeof ytPlayer.getPlayerState === 'function') {
+        const state = ytPlayer.getPlayerState();
+        if (state === YT.PlayerState.PLAYING) {
+          ytPlayer.pauseVideo();
+          updateMusicUI(false);
+          showToast("Đã tạm dừng nhạc Fall Rain", "⏸️");
+        } else {
+          ytPlayer.unMute();
+          ytPlayer.setVolume(55);
+          ytPlayer.playVideo();
+          updateMusicUI(true);
+          dismissMusicNotice();
+          showToast("Đang phát: Fall Rain (July) 🎵", "🎶");
+        }
+      } else {
+        startBGMImmediately();
+      }
+    }
+
+    // Kích hoạt âm thanh ngay khi người dùng chạm, click hoặc nhấn bất kỳ phím nào
+    function onFirstUserGesture() {
+      startBGMImmediately();
+      if (isMusicPlaying) {
+        ['pointerdown', 'click', 'touchstart', 'keydown'].forEach(evt => {
+          window.removeEventListener(evt, onFirstUserGesture, true);
+        });
+      }
+    }
+
+    ['pointerdown', 'click', 'touchstart', 'keydown'].forEach(evt => {
+      window.addEventListener(evt, onFirstUserGesture, { capture: true, passive: true });
+    });
+
+    // Tải YouTube IFrame API
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    if (firstScriptTag && firstScriptTag.parentNode) {
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    window.onYouTubeIframeAPIReady = function() {
+      ytPlayer = new YT.Player('ytPlayer', {
+        height: '10',
+        width: '10',
+        videoId: '2AOTAh1jfaY', // Video chuẩn xác bản gốc: Fall Rain - July
+        playerVars: {
+          'autoplay': 1,
+          'loop': 1,
+          'playlist': '2AOTAh1jfaY',
+          'controls': 0,
+          'disablekb': 1,
+          'fs': 0,
+          'modestbranding': 1,
+          'playsinline': 1
+        },
+        events: {
+          'onReady': function(event) {
+            isYtReady = true;
+            try {
+              event.target.unMute();
+              event.target.setVolume(55);
+              event.target.playVideo();
+              updateMusicUI(true);
+            } catch(e) {}
+          },
+          'onStateChange': function(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+              updateMusicUI(true);
+              dismissMusicNotice();
+            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+              updateMusicUI(false);
+            }
+          }
+        }
+      });
+    };
+
+    /* ==============================================================
+       3. DỮ LIỆU & QUẢN LÝ PHÂN QUYỀN TRẮC NGHIỆM
+    =============================================================== */
+    const STORAGE_KEY_TAM_DATA = "friendship_quiz_tam_master_data_v1";
+    const ALL_POSSIBLE_KEYS = [
+      "friendship_quiz_tam_master_data_v1",
+      "friendship_quiz_master_data_v2",
+      "friendship_quiz_master_data_v3",
+      "friendship_quiz_master_data",
+      "friendship_quiz_data"
+    ];
+    const STORAGE_KEY_PASS = "friendship_quiz_master_password";
+    const STORAGE_KEY_LEADERBOARD = "friendship_quiz_leaderboard_history";
+    const DEFAULT_PASS = "123456";
+
+    // Danh sách câu hỏi mặc định của Mai Tâm
+    const DEFAULT_QUESTIONS = [
+      {
+        question: "Món ăn vặt tủ hoặc đồ uống 'chân ái' của Mai Tâm là gì?",
+        options: ["Trà sữa full topping 🧋", "Bánh tráng trộn / nướng cay 🌶️", "Cà phê đen / sữa đá ☕", "Gà rán / Khoai tây lắc 🍗"],
+        answerIndex: 0
+      },
+      {
+        question: "Thể loại game hoặc cách giải trí yêu thích nhất của Mai Tâm khi rảnh?",
+        options: ["Cày phim thâu đêm suốt sáng 🍿", "Leo rank game cùng bạn bè 🎮", "Ngủ nướng một giấc tới chiều 😴", "Lướt TikTok / Reels cười một mình 📱"],
+        answerIndex: 1
+      },
+      {
+        question: "Thứ làm Mai Tâm 'rén' hoặc sợ hãi nhất trên đời là gì?",
+        options: ["Con gián biết bay 🪳", "Deadline dí sát mông ⏰", "Hết tiền giữa tháng 💸", "Bị bạn bè lơ / người thương dỗi 💔"],
+        answerIndex: 0
+      },
+      {
+        question: "Điểm đến du lịch mơ ước nhất lúc này của Mai Tâm là đâu?",
+        options: ["Đà Lạt se lạnh săn mây 🌲", "Đi biển ngắm hoàng hôn lộng gió 🌊", "Du lịch nước ngoài (Nhật / Hàn / Thái) ✈️", "Ở nhà đắp chăn bật máy lạnh 🏠"],
+        answerIndex: 2
+      },
+      {
+        question: "Nếu có 1 điều ước thành hiện thực ngay lập tức, Mai Tâm sẽ chọn gì?",
+        options: ["Trúng số độc đắc nghỉ hưu sớm 💰", "Ăn hoài không bao giờ mập 🍕", "Trở nên thông minh xuất chúng 🧠", "Du hành thời gian về quá khứ ⏳"],
+        answerIndex: 0
+      }
+    ];
+
+    let customQuestions = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
+    let creatorName = "Mai Tâm";
+
+    let activeQuizData = null;
+    let currentQuestionIndex = 0;
+    let playerAnswers = [];
+    let playerName = "";
+    let isOwnerLoggedIn = false;
+    let isGuestCreatorMode = false; // true khi bạn bè tự tạo quiz riêng
+
+    /* Tự động lưu mọi thay đổi khi Mai Tâm chỉnh sửa */
+    function autoSaveQuestions() {
+      if (!isGuestCreatorMode) {
+        const payload = {
+          creator: creatorName || "Mai Tâm",
+          createdAt: Date.now(),
+          questions: customQuestions
+        };
+        ALL_POSSIBLE_KEYS.forEach(k => {
+          try { localStorage.setItem(k, JSON.stringify(payload)); } catch(e){}
+        });
+      }
+    }
+
+    /* Thuật toán quét và khôi phục toàn bộ câu hỏi đã lưu của Mai Tâm */
+    function recoverSavedQuizData() {
+      let candidate = null;
+
+      for (const k of ALL_POSSIBLE_KEYS) {
+        try {
+          const val = localStorage.getItem(k);
+          if (val) {
+            const parsed = JSON.parse(val);
+            if (parsed && Array.isArray(parsed.questions) && parsed.questions.length > 0) {
+              if (!candidate || parsed.questions.length > candidate.questions.length) {
+                candidate = parsed;
+              }
+            }
+          }
+        } catch(e) {}
+      }
+
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          const val = localStorage.getItem(k);
+          if (val && typeof val === 'string' && val.includes('"questions"') && val.includes('"options"')) {
+            try {
+              const parsed = JSON.parse(val);
+              if (parsed && Array.isArray(parsed.questions) && parsed.questions.length > 0) {
+                if (!candidate || parsed.questions.length > candidate.questions.length) {
+                  candidate = parsed;
+                }
+              }
+            } catch(err) {}
+          }
+        }
+      } catch(e) {}
+
+      return candidate;
+    }
+
+    /* Quản lý danh sách thành tích người chơi */
+    function getLeaderboard() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_LEADERBOARD);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveScoreToLeaderboard(pName, score, total, percent) {
+      const list = getLeaderboard();
+      const now = new Date();
+      const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+
+      list.unshift({
+        id: Date.now(),
+        name: pName,
+        score: score,
+        total: total,
+        percent: percent,
+        time: timeStr
+      });
+
+      if (list.length > 50) list.pop();
+
+      localStorage.setItem(STORAGE_KEY_LEADERBOARD, JSON.stringify(list));
+      renderLeaderboardUI();
+    }
+
+    function clearLeaderboardHistory() {
+      if (confirm("Cậu có chắc chắn muốn xóa toàn bộ lịch sử điểm số của bạn bè không?")) {
+        localStorage.removeItem(STORAGE_KEY_LEADERBOARD);
+        renderLeaderboardUI();
+        showToast("Đã làm mới danh sách thành tích!", "🗑️");
+      }
+    }
+
+    function renderLeaderboardUI() {
+      const list = getLeaderboard();
+      const countBadge = document.getElementById('leaderboardCountBadge');
+      if (countBadge) countBadge.textContent = `${list.length} bạn đã làm`;
+
+      // 1. Render tại màn hình chào đón làm bài (Step 2.1)
+      const welcomeListEl = document.getElementById('welcomeLeaderboardList');
+      if (welcomeListEl) {
+        if (list.length === 0) {
+          welcomeListEl.innerHTML = `
+            <div class="text-xs text-white/80 italic p-3 rounded-xl bg-black/25 text-center font-medium">
+              Chưa có ai tham gia, cậu hãy là người đầu tiên thử xem hiểu Mai Tâm đến đâu nhé! ✨
+            </div>
+          `;
+        } else {
+          welcomeListEl.innerHTML = list.map((item, idx) => {
+            let medal = "🎖️";
+            if (idx === 0) medal = "🥇";
+            else if (idx === 1) medal = "🥈";
+            else if (idx === 2) medal = "🥉";
+
+            return `
+              <div class="flex items-center justify-between p-2.5 rounded-xl bg-black/30 border border-white/15 text-xs text-white text-glow">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">${medal}</span>
+                  <span class="font-bold text-sm text-pink-200">${escapeHtml(item.name)}</span>
+                  <span class="text-[11px] text-white/70">(${item.time})</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="font-black px-2 py-0.5 rounded-lg bg-pink-500/35 border border-pink-300/40 text-white">
+                    ${item.score}/${item.total} câu (${item.percent}%)
+                  </span>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // 2. Render tại màn hình kết quả (Screen 3)
+      const resultListEl = document.getElementById('resultLeaderboardList');
+      if (resultListEl) {
+        resultListEl.innerHTML = list.slice(0, 5).map((item, idx) => {
+          let medal = idx === 0 ? "🥇" : (idx === 1 ? "🥈" : (idx === 2 ? "🥉" : "🎖️"));
+          const isCurrent = item.name === playerName;
+          return `
+            <div class="flex items-center justify-between p-2 rounded-lg ${isCurrent ? 'bg-pink-500/40 border border-pink-300' : 'bg-black/25'} text-xs text-white text-glow">
+              <span class="font-bold">${medal} ${escapeHtml(item.name)} ${isCurrent ? '<span class="text-[10px] text-pink-200 font-black">(Cậu)</span>' : ''}</span>
+              <span class="font-black text-pink-200">${item.score}/${item.total} (${item.percent}%)</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 3. Render tại màn hình quản lý của chủ nhân (Screen 1)
+      const ownerListEl = document.getElementById('ownerLeaderboardList');
+      if (ownerListEl) {
+        if (list.length === 0) {
+          ownerListEl.innerHTML = `<div class="text-xs text-white/70 italic p-2">Chưa có bạn bè nào làm bài.</div>`;
+        } else {
+          ownerListEl.innerHTML = list.map((item, idx) => `
+            <div class="flex items-center justify-between p-2 rounded-lg bg-black/30 text-xs text-white">
+              <span class="font-bold">${idx + 1}. ${escapeHtml(item.name)} <span class="text-white/60 font-normal">(${item.time})</span></span>
+              <span class="font-black text-emerald-300">${item.score}/${item.total} câu (${item.percent}%)</span>
+            </div>
+          `).join('');
+        }
+      }
+    }
+
+    function manualRecoverQuestions() {
+      const recovered = recoverSavedQuizData();
+      if (recovered && recovered.questions && recovered.questions.length > 0) {
+        customQuestions = JSON.parse(JSON.stringify(recovered.questions));
+        creatorName = recovered.creator || creatorName;
+        autoSaveQuestions();
+        renderQuestionsList();
+        showToast(`Đã khôi phục thành công ${recovered.questions.length} câu hỏi của bạn! 🎉`, "✅");
+      } else {
+        showToast("Không tìm thấy bản lưu câu hỏi cũ trong trình duyệt!", "⚠️");
+      }
+    }
+
+    function getOwnerPassword() {
+      return localStorage.getItem(STORAGE_KEY_PASS) || DEFAULT_PASS;
+    }
+
+    function promptChangePassword() {
+      if (!isOwnerLoggedIn) return;
+      const newPass = prompt("Nhập mật khẩu chủ nhân mới (tối thiểu 4 ký tự):");
+      if (newPass !== null) {
+        if (newPass.trim().length >= 4) {
+          localStorage.setItem(STORAGE_KEY_PASS, newPass.trim());
+          showToast("Đã đổi mật khẩu chủ nhân thành công!", "🔑");
+        } else {
+          showToast("Mật khẩu phải có ít nhất 4 ký tự!", "⚠️");
+        }
+      }
+    }
+
+    /* ==============================================================
+       4. MÃ HÓA & GIẢI MÃ DỮ LIỆU URL (HỖ TRỢ UNICODE TIẾNG VIỆT)
+    =============================================================== */
+    function encodeQuizData(data) {
+      try {
+        const jsonStr = JSON.stringify(data);
+        const utf8Bytes = encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+          return String.fromCharCode('0x' + p1);
+        });
+        return btoa(utf8Bytes);
+      } catch (err) {
+        console.error("Lỗi mã hóa dữ liệu:", err);
+        return null;
+      }
+    }
+
+    function decodeQuizData(base64) {
+      try {
+        const binStr = atob(base64);
+        const jsonStr = decodeURIComponent(binStr.split('').map(c => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonStr);
+      } catch (err) {
+        console.error("Lỗi giải mã dữ liệu:", err);
+        return null;
+      }
+    }
+
+    /* ==============================================================
+       5. BẢO MẬT: MỞ MODAL XÁC THỰC MẬT KHẨU CHỦ NHÂN
+    =============================================================== */
+    function openPasswordModal() {
+      if (isOwnerLoggedIn) {
+        enterOwnerMode();
+        return;
+      }
+      
+      const modal = document.getElementById('passwordModal');
+      const box = document.getElementById('passwordModalBox');
+      const input = document.getElementById('ownerPasswordInput');
+      const err = document.getElementById('ownerPassError');
+
+      input.value = '';
+      err.classList.add('hidden');
+      box.classList.remove('animate-shake');
+
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        box.classList.remove('scale-95');
+        box.classList.add('scale-100');
+        input.focus();
+      }, 10);
+    }
+
+    function closePasswordModal() {
+      const modal = document.getElementById('passwordModal');
+      const box = document.getElementById('passwordModalBox');
+      modal.classList.add('opacity-0');
+      box.classList.remove('scale-100');
+      box.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    function verifyOwnerPassword() {
+      const input = document.getElementById('ownerPasswordInput');
+      const err = document.getElementById('ownerPassError');
+      const box = document.getElementById('passwordModalBox');
+      const pass = input.value.trim();
+
+      const currentPass = getOwnerPassword();
+
+      if (pass === currentPass) {
+        isOwnerLoggedIn = true;
+        closePasswordModal();
+        enterOwnerMode();
+        showToast("Đã xác thực thành công quyền Mai Tâm! 🔓", "✨");
+      } else {
+        err.classList.remove('hidden');
+        box.classList.add('animate-shake');
+        setTimeout(() => box.classList.remove('animate-shake'), 400);
+        input.select();
+      }
+    }
+
+    function enterOwnerMode() {
+      isGuestCreatorMode = false;
+      isOwnerLoggedIn = true;
+      showScreen('screenCreate');
+      document.getElementById('btnOwnerArea').classList.add('hidden');
+      document.getElementById('btnExitOwner').classList.remove('hidden');
+
+      // Đảm bảo nạp đúng bộ câu hỏi của Mai Tâm
+      const tamData = recoverSavedQuizData();
+      if (tamData && tamData.questions && tamData.questions.length > 0) {
+        customQuestions = JSON.parse(JSON.stringify(tamData.questions));
+        creatorName = tamData.creator || "Mai Tâm";
+      }
+
+      renderQuestionsList();
+      renderLeaderboardUI();
+    }
+
+    function exitOwnerMode() {
+      isGuestCreatorMode = false;
+      showScreen('screenQuiz');
+      document.getElementById('btnOwnerArea').classList.remove('hidden');
+      document.getElementById('btnExitOwner').classList.add('hidden');
+    }
+
+    /* ==============================================================
+       6. MÀN HÌNH 1: RENDER VÀ QUẢN LÝ TẠO/SỬA CÂU HỎI
+    =============================================================== */
+    function renderQuestionsList() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+      document.getElementById('creatorNameInput').value = creatorName;
+
+      // Cập nhật giao diện tùy theo Chế độ Chủ nhân hay Chế độ Bạn bè tự tạo
+      const ownerHeader = document.getElementById('ownerAdminHeader');
+      const ownerHistory = document.getElementById('ownerHistorySection');
+      const createTitle = document.getElementById('screenCreateTitle');
+      const createDesc = document.getElementById('screenCreateDesc');
+      const createNameLabel = document.getElementById('creatorNameLabel');
+      const btnSave = document.getElementById('btnSaveQuiz');
+
+      if (isGuestCreatorMode) {
+        if (ownerHeader) ownerHeader.classList.add('hidden');
+        if (ownerHistory) ownerHistory.classList.add('hidden');
+        if (createTitle) createTitle.textContent = "Tạo Thử Thách Của Riêng Cậu";
+        if (createDesc) createDesc.textContent = "Nhập tên của cậu, tạo các câu hỏi rồi lấy link gửi bạn bè làm thử nhé!";
+        if (createNameLabel) createNameLabel.innerHTML = `👤 Tên của cậu: <span class="text-pink-300">*</span>`;
+        if (btnSave) btnSave.innerHTML = `<span>🚀</span> Tạo & Lấy Link Chia Sẻ`;
+      } else {
+        if (ownerHeader) ownerHeader.classList.remove('hidden');
+        if (ownerHistory) ownerHistory.classList.remove('hidden');
+        if (createTitle) createTitle.textContent = "Quản Lý Bộ Câu Hỏi Của Mai Tâm";
+        if (createDesc) createDesc.textContent = "Tùy biến câu hỏi & đáp án mặc định của trang web!";
+        if (createNameLabel) createNameLabel.innerHTML = `👤 Tên chủ nhân bài quiz: <span class="text-pink-300">*</span>`;
+        if (btnSave) btnSave.innerHTML = `<span>💾</span> Lưu & Lấy Link Thử Thách`;
+      }
+
+      customQuestions.forEach((q, qIndex) => {
+        const qCard = document.createElement('div');
+        qCard.id = `qCard_${qIndex}`;
+        qCard.className = "p-4 md:p-5 rounded-2xl ultra-glass-box space-y-4";
+        
+        qCard.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-black text-pink-200 bg-pink-500/30 px-2.5 py-1 rounded-md border border-pink-300/40 text-glow">
+              Câu hỏi ${qIndex + 1}
+            </span>
+            ${customQuestions.length > 1 ? `
+              <button type="button" onclick="removeQuestion(${qIndex})" class="text-xs text-rose-300 hover:text-rose-200 hover:underline flex items-center gap-1 font-bold text-glow">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Xóa câu này
+              </button>
+            ` : ''}
+          </div>
+
+          <div>
+            <label class="block text-xs font-black text-white mb-1.5 text-glow">
+              ✏️ Tiêu đề câu hỏi:
+            </label>
+            <input 
+              type="text" 
+              value="${escapeHtml(q.question)}" 
+              oninput="updateQuestionTitle(${qIndex}, this.value)"
+              placeholder="Nhập nội dung câu hỏi..." 
+              class="glass-input-field w-full px-3.5 py-2.5 rounded-xl text-sm font-bold outline-none"
+            >
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-xs font-black text-white text-glow">
+              🎯 4 Đáp án (Click ô chữ để sửa nội dung, bấm nút A/B/C/D để chọn đáp án đúng của bạn):
+            </label>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="optionsBox_${qIndex}">
+              ${q.options.map((opt, optIndex) => {
+                const isCorrect = q.answerIndex === optIndex;
+                const letter = String.fromCharCode(65 + optIndex);
+                return `
+                  <div id="optRow_${qIndex}_${optIndex}" class="flex items-center gap-2 p-2 rounded-xl border transition-all ${
+                    isCorrect 
+                      ? 'bg-pink-600/40 border-pink-300 shadow-md shadow-pink-500/30' 
+                      : 'bg-black/35 border-white/20 hover:border-white/40'
+                  }">
+                    <button 
+                      type="button" 
+                      onclick="setCorrectAnswer(${qIndex}, ${optIndex})"
+                      title="Chọn đáp án ${letter} là câu trả lời đúng của bạn"
+                      class="px-2.5 py-1.5 rounded-lg font-black text-xs transition flex items-center gap-1 shrink-0 ${
+                        isCorrect 
+                          ? 'bg-pink-500 text-white shadow-lg' 
+                          : 'bg-white/15 text-white hover:bg-white/25'
+                      }"
+                    >
+                      <span>${letter}</span>
+                      ${isCorrect ? '<span>✓</span>' : ''}
+                    </button>
+
+                    <input 
+                      type="text" 
+                      value="${escapeHtml(opt)}" 
+                      oninput="updateOptionText(${qIndex}, ${optIndex}, this.value)"
+                      placeholder="Nhập đáp án ${letter}..."
+                      class="bg-black/30 hover:bg-black/50 focus:bg-black/70 border border-white/20 focus:border-pink-300 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-300 w-full outline-none font-bold transition"
+                    >
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+        container.appendChild(qCard);
+      });
+    }
+
+    function updateQuestionTitle(qIndex, text) {
+      customQuestions[qIndex].question = text;
+      autoSaveQuestions();
+    }
+
+    function updateOptionText(qIndex, optIndex, text) {
+      customQuestions[qIndex].options[optIndex] = text;
+      autoSaveQuestions();
+    }
+
+    function setCorrectAnswer(qIndex, optIndex) {
+      customQuestions[qIndex].answerIndex = optIndex;
+      autoSaveQuestions();
+      
+      for (let i = 0; i < 4; i++) {
+        const row = document.getElementById(`optRow_${qIndex}_${i}`);
+        if (!row) continue;
+        const letter = String.fromCharCode(65 + i);
+        const isCorrect = (i === optIndex);
+        
+        row.className = `flex items-center gap-2 p-2 rounded-xl border transition-all ${
+          isCorrect 
+            ? 'bg-pink-600/40 border-pink-300 shadow-md shadow-pink-500/30' 
+            : 'bg-black/35 border-white/20 hover:border-white/40'
+        }`;
+
+        const btn = row.querySelector('button');
+        if (btn) {
+          btn.className = `px-2.5 py-1.5 rounded-lg font-black text-xs transition flex items-center gap-1 shrink-0 ${
+            isCorrect 
+              ? 'bg-pink-500 text-white shadow-lg' 
+              : 'bg-white/15 text-white hover:bg-white/25'
+          }`;
+          btn.innerHTML = `<span>${letter}</span>${isCorrect ? '<span>✓</span>' : ''}`;
+        }
+      }
+
+      showToast(`Đã chọn đáp án ${String.fromCharCode(65 + optIndex)} làm đáp án đúng cho Câu ${qIndex + 1}!`, "🎯");
+    }
+
+    function addNewQuestion() {
+      if (customQuestions.length >= 15) {
+        showToast("Đã đạt giới hạn số lượng câu hỏi!", "⚠️");
+        return;
+      }
+      customQuestions.push({
+        question: `Câu hỏi số ${customQuestions.length + 1} về ${creatorName}?`,
+        options: ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+        answerIndex: 0
+      });
+      autoSaveQuestions();
+      renderQuestionsList();
+      showToast("Đã thêm câu hỏi mới", "➕");
+      setTimeout(() => {
+        const container = document.getElementById('questionsContainer');
+        container.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+
+    function removeQuestion(index) {
+      if (customQuestions.length <= 1) {
+        showToast("Cần tối thiểu 1 câu hỏi cho Friendship Quiz!", "⚠️");
+        return;
+      }
+      customQuestions.splice(index, 1);
+      autoSaveQuestions();
+      renderQuestionsList();
+      showToast("Đã xóa câu hỏi", "🗑️");
+    }
+
+    /* Mở chế độ tự tạo Quiz cho bạn bè (Không cần mật khẩu) */
+    function openCreateOwnQuizScreen() {
+      isGuestCreatorMode = true;
+      creatorName = "";
+      
+      // Tạo bộ 5 câu hỏi gợi ý để bạn bè dễ dàng sửa theo ý mình
+      customQuestions = [
+        {
+          question: "Món ăn yêu thích nhất của tớ là gì?",
+          options: ["Trà sữa trân châu 🧋", "Bánh tráng trộn 🌶️", "Gà rán giòn rụm 🍗", "Phở / Bún bò 🍜"],
+          answerIndex: 0
+        },
+        {
+          question: "Lúc rảnh rỗi tớ thường thích làm gì nhất?",
+          options: ["Cày phim thâu đêm 🍿", "Chơi game leo rank 🎮", "Ngủ nướng cả ngày 😴", "Lướt mạng xã hội 📱"],
+          answerIndex: 1
+        },
+        {
+          question: "Tính cách nổi bật nhất của tớ trong mắt cậu là gì?",
+          options: ["Hài hước, vui tính 😂", "Trầm tính, biết lắng nghe 🎧", "Nhiệt tình, chu đáo 🥰", "Hay dỗi nhưng dễ dỗ 😜"],
+          answerIndex: 0
+        },
+        {
+          question: "Điểm du lịch mà tớ mơ ước được đi cùng bạn bè nhất?",
+          options: ["Đà Lạt se lạnh 🌲", "Đi biển lộng gió 🌊", "Du lịch nước ngoài ✈️", "Cắm trại dã ngoại 🏕️"],
+          answerIndex: 0
+        },
+        {
+          question: "Điều ước lớn nhất của tớ lúc này là gì?",
+          options: ["Luôn luôn giàu có 💰", "Ăn hoài không béo 🍕", "Gặp nhiều may mắn 🍀", "Mọi người luôn vui vẻ 💖"],
+          answerIndex: 0
+        }
+      ];
+
+      showScreen('screenCreate');
+      renderQuestionsList();
+      showToast("Hãy tạo bộ câu hỏi của riêng cậu nào! ✨", "🎉");
+    }
+
+    function saveAndGenerateQuizLink() {
+      const nameInput = document.getElementById('creatorNameInput');
+      const nameErr = document.getElementById('creatorNameError');
+      const name = nameInput.value.trim();
+
+      if (!name) {
+        nameErr.classList.remove('hidden');
+        nameInput.focus();
+        showToast("Cậu hãy nhập tên của mình nhé!", "⚠️");
+        return;
+      } else {
+        nameErr.classList.add('hidden');
+      }
+
+      creatorName = name;
+      const payload = {
+        creator: creatorName,
+        createdAt: Date.now(),
+        questions: customQuestions
+      };
+
+      // Nếu là Mai Tâm (Chủ nhân) -> lưu làm bộ câu hỏi mặc định
+      if (!isGuestCreatorMode) {
+        ALL_POSSIBLE_KEYS.forEach(k => {
+          try { localStorage.setItem(k, JSON.stringify(payload)); } catch(e){}
+        });
+        showToast("Đã lưu bộ câu hỏi của Mai Tâm thành công!", "💾");
+      }
+
+      // Tạo mã hóa Base64 gắn vào link URL
+      const encoded = encodeQuizData(payload);
+      if (!encoded) {
+        showToast("Có lỗi xảy ra khi tạo link quiz!", "❌");
+        return;
+      }
+
+      const currentUrl = window.location.href.split('#')[0].split('?')[0];
+      const fullShareLink = `${currentUrl}#quiz=${encoded}`;
+
+      document.getElementById('generatedLinkInput').value = fullShareLink;
+      openShareModal();
+    }
+
+    function openShareModal() {
+      const modal = document.getElementById('shareModal');
+      const modalBox = document.getElementById('shareModalBox');
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modalBox.classList.remove('scale-95');
+        modalBox.classList.add('scale-100');
+      }, 10);
+    }
+
+    function closeShareModal() {
+      const modal = document.getElementById('shareModal');
+      const modalBox = document.getElementById('shareModalBox');
+      modal.classList.add('opacity-0');
+      modalBox.classList.remove('scale-100');
+      modalBox.classList.add('scale-95');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 300);
+    }
+
+    function copyGeneratedLink() {
+      const input = document.getElementById('generatedLinkInput');
+      input.select();
+      input.setSelectionRange(0, 99999);
+      
+      navigator.clipboard.writeText(input.value).then(() => {
+        const btnText = document.getElementById('copyBtnText');
+        btnText.textContent = "Đã chép! ✓";
+        showToast("Đã sao chép link thử thách của cậu!", "📋");
+        setTimeout(() => {
+          btnText.textContent = "Sao chép";
+        }, 2000);
+      }).catch(() => {
+        document.execCommand('copy');
+        showToast("Đã sao chép link!", "📋");
+      });
+    }
+
+    function tryCreatedQuiz() {
+      closeShareModal();
+      const input = document.getElementById('generatedLinkInput');
+      const hash = input.value.substring(input.value.indexOf('#'));
+      window.location.hash = hash;
+      initApp();
+    }
+
+    /* Quay lại bộ câu hỏi mặc định của Mai Tâm */
+    function loadTamDefaultQuiz() {
+      // Xóa hash trên URL
+      history.pushState("", document.title, window.location.pathname + window.location.search);
+      window.location.hash = "";
+      initApp();
+      showToast("Đã chuyển về Friendship Quiz của Mai Tâm! 🌸", "💖");
+    }
+
+    /* ==============================================================
+       7. MÀN HÌNH 2: GIAO DIỆN LÀM BÀI DÀNH CHO BẠN BÈ (MẶC ĐỊNH)
+    =============================================================== */
+    function initApp() {
+      let hash = window.location.hash;
+      let encodedData = null;
+
+      // 1. Kiểm tra xem có ai bấm vào link chia sẻ (#quiz=...) không
+      if (hash && hash.includes('quiz=')) {
+        encodedData = hash.split('quiz=')[1];
+      } else {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('quiz')) {
+          encodedData = params.get('quiz');
+        }
+      }
+
+      const btnBackTam = document.getElementById('btnBackToTamQuiz');
+
+      if (encodedData) {
+        // NẾU CÓ LINK CHIA SẺ CỦA NGƯỜI KHÁC: Hiện đúng câu hỏi của người đó!
+        const decoded = decodeQuizData(encodedData);
+        if (decoded && decoded.questions && decoded.questions.length > 0) {
+          activeQuizData = decoded;
+          creatorName = decoded.creator || "Bạn Ấy";
+          customQuestions = JSON.parse(JSON.stringify(decoded.questions));
+          if (btnBackTam) btnBackTam.classList.remove('hidden');
+        }
+      } else {
+        // MẶC ĐỊNH VÀO LINK GỐC: LUÔN LUÔN HIỆN CÂU HỎI CỦA MAI TÂM!
+        if (btnBackTam) btnBackTam.classList.add('hidden');
+        const recovered = recoverSavedQuizData();
+        if (recovered && recovered.questions && recovered.questions.length > 0) {
+          activeQuizData = recovered;
+          creatorName = recovered.creator || "Mai Tâm";
+          customQuestions = JSON.parse(JSON.stringify(recovered.questions));
+        } else {
+          activeQuizData = {
+            creator: "Mai Tâm",
+            questions: customQuestions
+          };
+        }
+      }
+
+      setupQuizWelcomeUI();
+      renderLeaderboardUI();
+      showScreen('screenQuiz');
+
+      // Thử phát nhạc ngay lập tức
+      startBGMImmediately();
+    }
+
+    function setupQuizWelcomeUI() {
+      const hostName = activeQuizData.creator || "Mai Tâm";
+      document.getElementById('displayHostName').textContent = hostName;
+      document.getElementById('quizHostBadge').textContent = `Friendship Quiz từ ${hostName}`;
+      document.getElementById('quizPlayerStep').classList.remove('hidden');
+      document.getElementById('quizActiveStep').classList.add('hidden');
+      document.getElementById('playerNameInput').value = '';
+      document.getElementById('playerNameError').classList.add('hidden');
+    }
+
+    function startPlayingQuiz() {
+      const nameInput = document.getElementById('playerNameInput');
+      const err = document.getElementById('playerNameError');
+      const val = nameInput.value.trim();
+
+      if (!val) {
+        err.classList.remove('hidden');
+        nameInput.focus();
+        showToast("Cậu nhớ nhập tên để Mai Tâm biết là ai nhé!", "⚠️");
+        return;
+      }
+      err.classList.add('hidden');
+      playerName = val;
+
+      currentQuestionIndex = 0;
+      playerAnswers = new Array(activeQuizData.questions.length).fill(null);
+
+      document.getElementById('quizPlayerStep').classList.add('hidden');
+      document.getElementById('quizActiveStep').classList.remove('hidden');
+
+      renderActiveQuestion();
+    }
+
+    function renderActiveQuestion() {
+      if (!activeQuizData) return;
+      const total = activeQuizData.questions.length;
+      const q = activeQuizData.questions[currentQuestionIndex];
+
+      const percent = ((currentQuestionIndex + 1) / total) * 100;
+      document.getElementById('quizProgressBar').style.width = `${percent}%`;
+      document.getElementById('questionProgressText').textContent = `Câu ${currentQuestionIndex + 1} / ${total}`;
+
+      document.getElementById('currentQuestionTitle').textContent = `${currentQuestionIndex + 1}. ${q.question}`;
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+
+      const currentSelected = playerAnswers[currentQuestionIndex];
+
+      q.options.forEach((optText, optIdx) => {
+        const letter = String.fromCharCode(65 + optIdx);
+        const isSelected = currentSelected === optIdx;
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectOption(optIdx);
+        btn.className = `w-full text-left p-4 rounded-xl border transition-all duration-200 flex items-center gap-3.5 group cursor-pointer ${
+          isSelected 
+            ? 'bg-pink-600/60 border-pink-300 shadow-xl shadow-pink-500/40 scale-[1.01]' 
+            : 'bg-black/35 border-white/20 hover:border-white/45 hover:bg-black/55'
+        }`;
+
+        btn.innerHTML = `
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm shrink-0 transition ${
+            isSelected 
+              ? 'bg-pink-500 text-white shadow-md' 
+              : 'bg-white/15 text-white group-hover:bg-pink-500/30 group-hover:text-pink-100'
+          }">
+            ${letter}
+          </div>
+          <span class="text-sm md:text-base font-bold text-white text-glow">
+            ${escapeHtml(optText)}
+          </span>
+          ${isSelected ? `
+            <div class="ml-auto text-pink-200 font-black text-lg">
+              ✓
+            </div>
+          ` : ''}
+        `;
+        container.appendChild(btn);
+      });
+
+      const btnPrev = document.getElementById('btnPrevQuestion');
+      btnPrev.disabled = currentQuestionIndex === 0;
+
+      const btnNext = document.getElementById('btnNextQuestion');
+      if (currentQuestionIndex === total - 1) {
+        btnNext.innerHTML = `<span>Nộp bài & Xem kết quả</span> <span>🎯</span>`;
+        btnNext.className = "px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-sm shadow-xl shadow-emerald-500/40 transition flex items-center gap-1.5";
+      } else {
+        btnNext.innerHTML = `<span>Câu tiếp</span> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>`;
+        btnNext.className = "px-6 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-black text-sm shadow-xl shadow-pink-500/40 transition flex items-center gap-1.5";
+      }
+    }
+
+    function selectOption(optIndex) {
+      playerAnswers[currentQuestionIndex] = optIndex;
+      renderActiveQuestion();
+    }
+
+    function goToPrevQuestion() {
+      if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        renderActiveQuestion();
+      }
+    }
+
+    function goToNextQuestion() {
+      if (playerAnswers[currentQuestionIndex] === null) {
+        showToast("Cậu hãy chọn 1 đáp án trước khi qua câu tiếp theo nhé!", "💡");
+        return;
+      }
+
+      if (currentQuestionIndex < activeQuizData.questions.length - 1) {
+        currentQuestionIndex++;
+        renderActiveQuestion();
+      } else {
+        submitQuizAndShowResult();
+      }
+    }
+
+    /* ==============================================================
+       8. MÀN HÌNH 3: KẾT QUẢ & CHẤM ĐIỂM + LƯU VÀO BẢNG XẾP HẠNG
+    =============================================================== */
+    function submitQuizAndShowResult() {
+      const total = activeQuizData.questions.length;
+      let score = 0;
+
+      activeQuizData.questions.forEach((q, idx) => {
+        if (playerAnswers[idx] === q.answerIndex) {
+          score++;
+        }
+      });
+
+      const percent = Math.round((score / total) * 100);
+      const hostName = activeQuizData.creator || "Mai Tâm";
+
+      saveScoreToLeaderboard(playerName, score, total, percent);
+
+      document.getElementById('resPlayerName').textContent = playerName;
+      document.getElementById('resHostName').textContent = hostName;
+      document.getElementById('scoreText').textContent = score;
+      document.getElementById('totalQuestionsText').textContent = total;
+      document.getElementById('scorePercentBadge').textContent = `Đạt ${percent}% mức độ thấu hiểu`;
+
+      let feedback = "";
+      let badgeIcon = "🎉";
+
+      if (percent === 100) {
+        badgeIcon = "👑";
+        feedback = `“100% - Đỉnh nóc kịch trần! Cậu và ${hostName} đích thị là tri kỷ ngàn năm có một, gu ruột bồ tèo cốt cán 10/10!”`;
+      } else if (percent >= 70) {
+        badgeIcon = "💖";
+        feedback = `“${percent}% - Cậu hiểu ${hostName} rất rõ đó nha! Đúng là bạn thân chí cốt, chỉ lệch nhẹ vài chi tiết nhỏ thôi!”`;
+      } else if (percent >= 40) {
+        badgeIcon = "🧐";
+        feedback = `“${percent}% - Cần rủ ${hostName} đi chơi nhiều hơn nhé! Hiểu nhau sương sương nhưng cần rủ đi trà sữa bù đắp thêm gấp!”`;
+      } else {
+        badgeIcon = "🤣";
+        feedback = `“${percent}% - Ăn ở sao mà đoán trật lất vậy nè! Mau nhắn tin phạt kèo ăn uống để kết nối lại tình bạn liền nhé!”`;
+      }
+
+      const resultBadge = document.getElementById('resultBadgeIcon');
+      if (resultBadge) resultBadge.textContent = badgeIcon;
+      document.getElementById('funFeedbackText').textContent = feedback;
+
+      const reviewContainer = document.getElementById('resultAnswersReview');
+      reviewContainer.innerHTML = '';
+
+      activeQuizData.questions.forEach((q, idx) => {
+        const userChoice = playerAnswers[idx];
+        const isCorrect = userChoice === q.answerIndex;
+        const userText = userChoice !== null ? q.options[userChoice] : "Chưa chọn";
+        const correctText = q.options[q.answerIndex];
+
+        const item = document.createElement('div');
+        item.className = `p-3.5 rounded-xl border text-xs md:text-sm backdrop-blur-sm ${
+          isCorrect 
+            ? 'bg-emerald-950/70 border-emerald-400/50 text-emerald-100' 
+            : 'bg-rose-950/70 border-rose-400/50 text-rose-100'
+        }`;
+
+        item.innerHTML = `
+          <div class="font-bold text-white mb-1.5 text-glow">
+            Câu ${idx + 1}: ${escapeHtml(q.question)}
+          </div>
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <div>
+              <span>Cậu đoán: </span>
+              <span class="font-black ${isCorrect ? 'text-emerald-300' : 'text-rose-300'}">${escapeHtml(userText)}</span>
+              ${isCorrect ? ' ✓' : ' ✗'}
+            </div>
+            ${!isCorrect ? `
+              <div class="text-white/90">
+                <span>Đáp án đúng của ${hostName}: </span>
+                <span class="font-black text-emerald-300">${escapeHtml(correctText)}</span>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        reviewContainer.appendChild(item);
+      });
+
+      showScreen('screenResult');
+
+      if (percent >= 50) {
+        launchConfetti();
+      }
+    }
+
+    function retakeQuiz() {
+      currentQuestionIndex = 0;
+      playerAnswers = new Array(activeQuizData.questions.length).fill(null);
+      showScreen('screenQuiz');
+      document.getElementById('quizPlayerStep').classList.add('hidden');
+      document.getElementById('quizActiveStep').classList.remove('hidden');
+      renderActiveQuestion();
+      showToast("Bắt đầu làm lại thử thách!", "🔄");
+    }
+
+    function shareResultSummary() {
+      if (!activeQuizData) return;
+      const score = document.getElementById('scoreText').textContent;
+      const total = document.getElementById('totalQuestionsText').textContent;
+      const hostName = activeQuizData.creator || "Mai Tâm";
+      const percent = Math.round((parseInt(score) / parseInt(total)) * 100);
+      const textToShare = `🎉 Tôi vừa hoàn thành thử thách "Thử xem cậu hiểu ${hostName} đến mức nào nhé" và đạt ${score}/${total} câu (${percent}%)!\nCùng thử xem cậu có hiểu ${hostName} hơn tôi không nhé: ${window.location.href}`;
+      
+      navigator.clipboard.writeText(textToShare).then(() => {
+        showToast("Đã sao chép kết quả để khoe bạn bè!", "📋");
+      }).catch(() => {
+        showToast("Vui lòng sao chép link trên thanh địa chỉ!", "ℹ️");
+      });
+    }
+
+    /* ==============================================================
+       9. ĐIỀU HƯỚNG MÀN HÌNH & HIỆU ỨNG CHUYỂN CẢNH
+    =============================================================== */
+    function showScreen(screenId) {
+      const screens = ['screenCreate', 'screenQuiz', 'screenResult'];
+      screens.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (id === screenId) {
+            el.classList.remove('screen-hidden');
+            el.classList.add('screen-visible');
+          } else {
+            el.classList.remove('screen-visible');
+            el.classList.add('screen-hidden');
+          }
+        }
+      });
+
+      // Cập nhật giao diện nút Tạo Quiz trên thanh điều hướng Header: Bấm lần 2 để thoát
+      updateCreateNavButtonState(screenId === 'screenCreate');
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateCreateNavButtonState(isCreateScreen) {
+      const btn = document.getElementById('btnCreateOwnQuizNav');
+      const icon = document.getElementById('btnCreateIcon');
+      const textDesktop = document.getElementById('btnCreateText');
+      const textMobile = document.getElementById('btnCreateTextMobile');
+      if (!btn) return;
+
+      if (isCreateScreen) {
+        // Đổi nút thành nút Thoát màu đỏ/hồng nổi bật với icon ✕
+        btn.className = "text-xs md:text-sm px-3.5 py-1.5 rounded-xl bg-rose-600/90 hover:bg-rose-700 border border-white/40 transition text-white flex items-center gap-1.5 font-bold shadow-lg shadow-rose-600/40 text-glow cursor-pointer";
+        btn.title = "Đang ở chế độ tạo quiz - Bấm để thoát về sảnh chính";
+        if (icon) icon.textContent = "✕";
+        if (textDesktop) textDesktop.textContent = "Thoát tạo quiz";
+        if (textMobile) textMobile.textContent = "Thoát";
+      } else {
+        // Đổi lại thành nút Tạo quiz mặc định với hiệu ứng Gradient
+        btn.className = "text-xs md:text-sm px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 border border-white/30 transition text-white flex items-center gap-1.5 font-bold shadow-lg shadow-pink-500/30 text-glow cursor-pointer";
+        btn.title = "Tự tạo thử thách trắc nghiệm của riêng bạn (Bấm lần nữa để thoát)";
+        if (icon) icon.textContent = "✨";
+        if (textDesktop) textDesktop.textContent = "Tạo quiz của bạn";
+        if (textMobile) textMobile.textContent = "Tạo quiz";
+      }
+    }
+
+    /* ==============================================================
+       10. HIỆU ỨNG PHÁO HOA ĂN MỪNG (CANVAS CONFETTI SIÊU NHẸ)
+    =============================================================== */
+    function launchConfetti() {
+      const canvas = document.getElementById('confetti-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const pieces = [];
+      const colors = ['#f472b6', '#ec4899', '#818cf8', '#6366f1', '#fbbf24', '#34d399', '#38bdf8'];
+
+      for (let i = 0; i < 90; i++) {
+        pieces.push({
+          x: canvas.width / 2,
+          y: canvas.height * 0.45,
+          vx: (Math.random() - 0.5) * 16,
+          vy: (Math.random() - 0.8) * 15,
+          size: Math.random() * 8 + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 10,
+          gravity: 0.35,
+          opacity: 1
+        });
+      }
+
+      let frameCount = 0;
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = false;
+
+        pieces.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.rotation += p.rotSpeed;
+          p.opacity -= 0.008;
+
+          if (p.opacity > 0) {
+            alive = true;
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, p.opacity);
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 1.4);
+            ctx.restore();
+          }
+        });
+
+        frameCount++;
+        if (alive && frameCount < 160) {
+          requestAnimationFrame(animate);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      animate();
+    }
+
+    /* ==============================================================
+       11. TIỆN ÍCH HỖ TRỢ (TOAST, ESCAPE HTML)
+    =============================================================== */
+    let toastTimeout;
+    function showToast(msg, icon = "✅") {
+      const toast = document.getElementById('toastNotification');
+      const toastMsg = document.getElementById('toastMessage');
+      const toastIco = document.getElementById('toastIcon');
+
+      toastMsg.textContent = msg;
+      toastIco.textContent = icon;
+
+      clearTimeout(toastTimeout);
+      toast.classList.remove('translate-y-12', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-12', 'opacity-0');
+      }, 3000);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    /* ==============================================================
+       12. KHỞI CHẠY LẦN ĐẦU
+    =============================================================== */
+    window.addEventListener('DOMContentLoaded', () => {
+      initApp();
+    });
+
+    window.addEventListener('hashchange', () => {
+      initApp();
+    });
+
+    window.addEventListener('resize', () => {
+      const canvas = document.getElementById('confetti-canvas');
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+    });
+  </script>
+</body>
+</html>
