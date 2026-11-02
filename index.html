@@ -880,39 +880,114 @@
     ];
     const STORAGE_KEY_PASS = "friendship_quiz_master_password";
     const STORAGE_KEY_LEADERBOARD = "friendship_quiz_leaderboard_history";
-    const DEFAULT_PASS = "123456";
+    const DEFAULT_PASS = "1907";
 
     // Danh sách câu hỏi mặc định của Mai Tâm
     const DEFAULT_QUESTIONS = [
-      {
-        question: "Món ăn vặt tủ hoặc đồ uống 'chân ái' của Mai Tâm là gì?",
-        options: ["Trà sữa full topping 🧋", "Bánh tráng trộn / nướng cay 🌶️", "Cà phê đen / sữa đá ☕", "Gà rán / Khoai tây lắc 🍗"],
-        answerIndex: 0
-      },
-      {
-        question: "Thể loại game hoặc cách giải trí yêu thích nhất của Mai Tâm khi rảnh?",
-        options: ["Cày phim thâu đêm suốt sáng 🍿", "Leo rank game cùng bạn bè 🎮", "Ngủ nướng một giấc tới chiều 😴", "Lướt TikTok / Reels cười một mình 📱"],
-        answerIndex: 1
-      },
-      {
-        question: "Thứ làm Mai Tâm 'rén' hoặc sợ hãi nhất trên đời là gì?",
-        options: ["Con gián biết bay 🪳", "Deadline dí sát mông ⏰", "Hết tiền giữa tháng 💸", "Bị bạn bè lơ / người thương dỗi 💔"],
-        answerIndex: 0
-      },
-      {
-        question: "Điểm đến du lịch mơ ước nhất lúc này của Mai Tâm là đâu?",
-        options: ["Đà Lạt se lạnh săn mây 🌲", "Đi biển ngắm hoàng hôn lộng gió 🌊", "Du lịch nước ngoài (Nhật / Hàn / Thái) ✈️", "Ở nhà đắp chăn bật máy lạnh 🏠"],
-        answerIndex: 2
-      },
-      {
-        question: "Nếu có 1 điều ước thành hiện thực ngay lập tức, Mai Tâm sẽ chọn gì?",
-        options: ["Trúng số độc đắc nghỉ hưu sớm 💰", "Ăn hoài không bao giờ mập 🍕", "Trở nên thông minh xuất chúng 🧠", "Du hành thời gian về quá khứ ⏳"],
-        answerIndex: 0
-      }
-    ];
+  {
+    "question": " Nếu được chọn món ăn cho cả đời, tớ sẽ chọn món gì?",
+    "options": [
+      "Bánh quy",
+      "Bánh tráng trộn",
+      "Joliibee",
+      "Hủ tiếu"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "question": "Cách giải trí yêu thích nhất của Mtam khi rảnh?",
+    "options": [
+      "Cày phim thâu đêm suốt sáng 🍿",
+      "Leo rank Liên Quân / Tốc Chiến / LMHT 🎮",
+      "Ngủ nướng một giấc tới chiều 😴",
+      "Lướt TikTok / Reels cười một mình 📱"
+    ],
+    "answerIndex": 1
+  },
+  {
+    "question": "Châm ngôn sống của tớ là gì >_<",
+    "options": [
+      "Tiền là tất cả",
+      "Im  lặng là câu trả lời đắt giá",
+      "Sống vì cảm xúc",
+      "Giao tiếp xã hội là thứ dễ nhất trên đời"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "question": "Tớ là người thuộc phe ...",
+    "options": [
+      "Cú Đêm",
+      "Nghiện trà sữa",
+      "Hướng ngoại",
+      "Dậy sớm"
+    ],
+    "answerIndex": 0
+  },
+  {
+    "question": "Sinh nhật đầy đủ của tớ là ngày mấy?",
+    "options": [
+      "17/09",
+      "15/9",
+      "05/07",
+      "19/07"
+    ],
+    "answerIndex": 3
+  },
+  {
+    "question": "Mùa mà tớ thích nhất là gì ?",
+    "options": [
+      "Xuân",
+      "Hạ",
+      "Thu",
+      "Đông"
+    ],
+    "answerIndex": 3
+  },
+  {
+    "question": "Thời tiết mà tớ thích nhất ?",
+    "options": [
+      "Nắngg chan chan",
+      "Se se ",
+      "Râm",
+      "Mưa"
+    ],
+    "answerIndex": 3
+  },
+  {
+    "question": " Tớ sợ con gì hoặc điều gì nhất trên đời?",
+    "options": [
+      "Rắn",
+      "Gián",
+      "Chuột",
+      "Sâu"
+    ],
+    "answerIndex": 3
+  },
+  {
+    "question": "Thứ gì tớ dù cố ăn cũng không thể nuốt được ?",
+    "options": [
+      "Ớt",
+      "Bún đậu mắm tôm",
+      "Mắm ruốc",
+      "Sầu riêng"
+    ],
+    "answerIndex": 2
+  },
+  {
+    "question": "Khi tớ tâm trạng không tốt, tớ thường có xu hướng làm gì ?",
+    "options": [
+      "Chơi Game",
+      "Ngủ",
+      "Đi mua sắm",
+      "Lướt tik tok"
+    ],
+    "answerIndex": 3
+  }
+];
 
     let customQuestions = JSON.parse(JSON.stringify(DEFAULT_QUESTIONS));
-    let creatorName = "Mai Tâm";
+    let creatorName = "Tâm";
 
     let activeQuizData = null;
     let currentQuestionIndex = 0;
@@ -971,6 +1046,29 @@
       } catch(e) {}
 
       return candidate;
+    }
+
+    /* Tự động đồng bộ 10 câu hỏi & mật khẩu từ LocalStorage vào file code index.html khi mở localhost */
+    function autoSyncToLocalFile() {
+      if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') return;
+      const recovered = recoverSavedQuizData();
+      const savedPass = localStorage.getItem(STORAGE_KEY_PASS);
+      if (recovered && recovered.questions && recovered.questions.length > 0) {
+        fetch('/api/sync-tam-quiz', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            creator: recovered.creator || creatorName || "Mai Tâm",
+            questions: recovered.questions,
+            password: savedPass || DEFAULT_PASS
+          })
+        }).then(r => r.json()).then(res => {
+          if (res.success) {
+            console.log("[AUTO-SYNC] Đã tự động đồng bộ", res.count, "câu hỏi vào file index.html");
+            showToast(`Đã đồng bộ ${res.count} câu hỏi & mật khẩu vào file index.html!`, "💾");
+          }
+        }).catch(e => console.warn("Lỗi auto-sync:", e));
+      }
     }
 
     /* Quản lý danh sách thành tích người chơi */
@@ -1592,6 +1690,9 @@
 
       // Thử phát nhạc ngay lập tức
       startBGMImmediately();
+
+      // Nếu đang chạy trên localhost: Tự động đồng bộ 10 câu hỏi & mật khẩu vào file index.html
+      autoSyncToLocalFile();
     }
 
     function setupQuizWelcomeUI() {
