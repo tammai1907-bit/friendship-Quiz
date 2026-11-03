@@ -1779,7 +1779,7 @@ function doGet(e) {
           if (spinIcon) spinIcon.classList.remove('animate-spin');
           if (Array.isArray(data) && data.length > 0) {
             data.forEach(item => {
-              importScoreToLeaderboard(qKey, item.name, parseInt(item.score), parseInt(item.total), parseInt(item.percent), item.time);
+              importScoreToLeaderboard(qKey, item.name, parseInt(item.score), parseInt(item.total), parseInt(item.percent), item.time, item.answers);
             });
             renderLeaderboardUI();
             if (forceToast) showToast(`Đã đồng bộ ${data.length} kết quả từ Google Sheet!`, "☁️");
@@ -1803,51 +1803,80 @@ function doGet(e) {
         list = raw ? JSON.parse(raw) : [];
       } catch(e) { list = []; }
 
-      const isDup = list.some(item => 
+      // Phân tích ansArr (hỗ trợ cả JSON string "[0,1,2]" hoặc mảng)
+      let parsedAns = null;
+      if (Array.isArray(ansArr)) {
+        parsedAns = ansArr;
+      } else if (typeof ansArr === 'string' && ansArr.trim()) {
+        try {
+          const parsed = JSON.parse(ansArr);
+          if (Array.isArray(parsed)) parsedAns = parsed;
+        } catch(e) {
+          if (ansArr.includes(',')) {
+            parsedAns = ansArr.split(',').map(x => isNaN(parseInt(x.trim())) ? null : parseInt(x.trim()));
+          }
+        }
+      }
+
+      const existingIndex = list.findIndex(item => 
         item.name.trim().toLowerCase() === pName.trim().toLowerCase() &&
         item.score === score &&
         item.total === total
       );
 
-      if (!isDup) {
-        const now = new Date();
-        const formattedTime = timeStr || `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
-        
-        let details = null;
-        if (Array.isArray(ansArr) && activeQuizData?.questions) {
-          details = activeQuizData.questions.map((q, qIdx) => {
-            const chosenIdx = ansArr[qIdx];
-            const isCorrect = chosenIdx === q.answerIndex;
-            return {
-              question: q.question,
-              options: q.options,
-              chosenIndex: chosenIdx,
-              chosenText: (chosenIdx !== null && chosenIdx !== undefined && q.options[chosenIdx] !== undefined) ? q.options[chosenIdx] : "Chưa chọn",
-              correctIndex: q.answerIndex,
-              correctText: q.options[q.answerIndex] !== undefined ? q.options[q.answerIndex] : "",
-              isCorrect: isCorrect
-            };
-          });
-        }
+      const questions = (activeQuizData?.questions && activeQuizData.questions.length > 0) ? activeQuizData.questions : DEFAULT_QUESTIONS;
 
-        list.unshift({
-          id: Date.now(),
-          name: pName,
-          score: score,
-          total: total,
-          percent: percent,
-          time: formattedTime,
-          playerAnswers: ansArr ? [...ansArr] : null,
-          details: details
+      let details = null;
+      if (Array.isArray(parsedAns) && questions && questions.length > 0) {
+        details = questions.map((q, qIdx) => {
+          const chosenIdx = parsedAns[qIdx];
+          const isCorrect = chosenIdx === q.answerIndex;
+          return {
+            question: q.question,
+            options: q.options,
+            chosenIndex: chosenIdx,
+            chosenText: (chosenIdx !== null && chosenIdx !== undefined && q.options[chosenIdx] !== undefined) ? q.options[chosenIdx] : "Chưa chọn",
+            correctIndex: q.answerIndex,
+            correctText: q.options[q.answerIndex] !== undefined ? q.options[q.answerIndex] : "",
+            isCorrect: isCorrect
+          };
         });
-
-        if (list.length > 50) list.pop();
-        localStorage.setItem(storageKey, JSON.stringify(list));
-        if (qKey === "tam_master") {
-          localStorage.setItem("friendship_quiz_leaderboard_history", JSON.stringify(list));
-        }
-        renderLeaderboardUI();
       }
+
+      if (existingIndex !== -1) {
+        // Nếu bản ghi đã tồn tại nhưng chưa có details/playerAnswers thì cập nhật bổ sung
+        if ((!list[existingIndex].details || list[existingIndex].details.length === 0) && details) {
+          list[existingIndex].details = details;
+          list[existingIndex].playerAnswers = parsedAns;
+          localStorage.setItem(storageKey, JSON.stringify(list));
+          if (qKey === "tam_master") {
+            localStorage.setItem("friendship_quiz_leaderboard_history", JSON.stringify(list));
+          }
+          renderLeaderboardUI();
+        }
+        return;
+      }
+
+      const now = new Date();
+      const formattedTime = timeStr || `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+
+      list.unshift({
+        id: Date.now(),
+        name: pName,
+        score: score,
+        total: total,
+        percent: percent,
+        time: formattedTime,
+        playerAnswers: parsedAns ? [...parsedAns] : null,
+        details: details
+      });
+
+      if (list.length > 50) list.pop();
+      localStorage.setItem(storageKey, JSON.stringify(list));
+      if (qKey === "tam_master") {
+        localStorage.setItem("friendship_quiz_leaderboard_history", JSON.stringify(list));
+      }
+      renderLeaderboardUI();
     }
 
     function checkUrlSyncScore() {
@@ -2006,12 +2035,56 @@ function doGet(e) {
             `;
           }).join('');
         } else {
+          // HIỂN THỊ ĐẦY ĐỦ BỘ CÂU HỎI VÀ ĐÁP ÁN ĐÚNG CỦA MAI TÂM ĐỂ CHỦ PHÒNG XEM LẠI BỘ ĐỀ!
+          const questions = (activeQuizData && activeQuizData.questions && activeQuizData.questions.length > 0) ? activeQuizData.questions : DEFAULT_QUESTIONS;
           questionsContainer.innerHTML = `
-            <div class="p-4 rounded-xl bg-black/30 border border-white/10 text-center text-xs text-white/80">
-              <p class="font-bold mb-1">ℹ️ Lịch sử làm bài trước khi có tính năng lưu chi tiết từng câu.</p>
-              <p class="text-white/60">Từ các lượt làm bài mới, chủ phòng chỉ cần nhấn vào tên bạn bè là sẽ xem được chi tiết từng câu đúng/sai nhé!</p>
+            <div class="p-3.5 mb-3 rounded-2xl bg-indigo-950/60 border border-indigo-400/40 text-xs text-white shadow-lg space-y-1">
+              <div class="flex items-center gap-2 text-pink-300 font-bold">
+                <span class="text-base">📋</span>
+                <span>Bộ câu hỏi thử thách của Mai Tâm (${item.score}/${item.total} câu đúng)</span>
+              </div>
+              <p class="text-white/80 text-[11px] leading-relaxed">
+                Bạn <b>${escapeHtml(item.name)}</b> đã làm bài và đạt <b>${item.score}/${item.total} câu (${item.percent}%)</b>. Dưới đây là danh sách toàn bộ các câu hỏi cùng đáp án chuẩn của chủ nhân:
+              </p>
             </div>
-          `;
+          ` + questions.map((q, idx) => {
+            const correctText = q.options[q.answerIndex] !== undefined ? q.options[q.answerIndex] : "";
+            return `
+              <div class="p-3.5 rounded-2xl bg-white/10 border border-white/20 text-xs text-white shadow-sm space-y-2">
+                <div class="flex items-start justify-between gap-2">
+                  <span class="font-bold text-white text-glow leading-snug">Câu ${idx + 1}: ${escapeHtml(q.question)}</span>
+                  <span class="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-black bg-pink-500/30 text-pink-200 border border-pink-300/40">
+                    Câu ${idx + 1}
+                  </span>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 border-t border-white/10">
+                  ${q.options.map((opt, oIdx) => {
+                    const isCorrectOpt = oIdx === q.answerIndex;
+                    const letter = String.fromCharCode(65 + oIdx);
+                    return `
+                      <div class="px-2.5 py-1.5 rounded-xl text-xs flex items-center gap-2 ${
+                        isCorrectOpt 
+                          ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/60 font-bold shadow' 
+                          : 'bg-black/30 text-white/70 border border-white/5'
+                      }">
+                        <span class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
+                          isCorrectOpt ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white/60'
+                        }">${letter}</span>
+                        <span class="truncate">${escapeHtml(opt)}</span>
+                        ${isCorrectOpt ? '<span class="ml-auto text-[10px] font-black text-emerald-300">✓ ĐÚNG</span>' : ''}
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+
+                <div class="flex items-center gap-1.5 text-[11px] text-emerald-300 pt-1">
+                  <span class="text-white/60">Đáp án chuẩn của chủ nhân:</span>
+                  <b class="font-bold text-emerald-300">(${String.fromCharCode(65 + q.answerIndex)}) ${escapeHtml(correctText)}</b>
+                </div>
+              </div>
+            `;
+          }).join('');
         }
       }
 
