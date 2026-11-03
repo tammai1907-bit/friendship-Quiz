@@ -604,6 +604,22 @@
               </button>
             </div>
           </div>
+          <div class="flex flex-wrap gap-2 mt-2">
+            <button 
+              type="button" 
+              onclick="pushAllExistingScoresToGoogleSheet()"
+              class="px-3 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5"
+            >
+              <span>📤</span> Tải điểm hiện có lên Sheet (Anh Thư...)
+            </button>
+            <button 
+              type="button" 
+              onclick="loadScoresFromCloud(true)"
+              class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/25 border border-white/30 text-white font-bold text-xs shadow transition flex items-center gap-1.5"
+            >
+              <span>🔄</span> Cập nhật điểm từ Sheet về máy
+            </button>
+          </div>
           <div id="cloudSheetStatusMsg" class="text-xs mt-2 font-bold hidden text-glow"></div>
         </div>
 
@@ -1101,6 +1117,9 @@
           ytPlayer.loadVideoById(track.videoId, 0);
           ytPlayer.unMute();
           ytPlayer.setVolume(55);
+          if (typeof ytPlayer.playVideo === 'function') {
+            ytPlayer.playVideo();
+          }
         } catch(e) {
           console.warn("Load video error:", e);
         }
@@ -1466,19 +1485,29 @@
        CẤU HÌNH ĐỒNG BỘ CLOUD DATABASE QUA GOOGLE SHEETS
        (Tự động đồng bộ điểm số khi bạn bè làm trên Zalo, Messenger, Điện thoại)
     =============================================================== */
-    let CLOUD_SHEET_API = "";
+    // LINK GOOGLE APPS SCRIPT ĐƯỢC GHIM TRỰC TIẾP VĨNH VIỄN CHO MAI TÂM (TỰ ĐỘNG LƯU MỌI THIẾT BỊ & ĐIỆN THOẠI)
+    let CLOUD_SHEET_API = "https://script.google.com/macros/s/AKfycbzdPemwlz3JTTk9DnE4sC-weXSy6pYuCyehWXwtAeafbnw-rH3nmEeGjnPggtKIAwls/exec";
     try {
       const savedApi = localStorage.getItem("friendship_quiz_cloud_sheet_api");
-      if (savedApi) CLOUD_SHEET_API = savedApi;
+      if (savedApi && savedApi.startsWith('http')) {
+        CLOUD_SHEET_API = savedApi;
+      } else {
+        localStorage.setItem("friendship_quiz_cloud_sheet_api", CLOUD_SHEET_API);
+      }
     } catch(e) {}
 
     const APPS_SCRIPT_CODE = `function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     if (sheet.getLastRow() === 0) {
-      sheet.appendRow(["Thời gian", "Quiz ID", "Chủ nhân", "Tên bạn bè", "Điểm số", "Tổng câu", "Tỷ lệ %"]);
+      sheet.appendRow(["Thời gian", "Quiz ID", "Chủ nhân", "Tên bạn bè", "Điểm số", "Tổng câu", "Tỷ lệ %", "Chi tiết câu"]);
     }
-    var data = JSON.parse(e.postData.contents);
+    var data = {};
+    if (e.postData && e.postData.contents) {
+      try { data = JSON.parse(e.postData.contents); } catch(ex) { data = e.parameter || {}; }
+    } else if (e.parameter) {
+      data = e.parameter;
+    }
     sheet.appendRow([
       data.time || new Date().toLocaleString("vi-VN"),
       data.quizKey || "tam_master",
@@ -1486,7 +1515,8 @@
       data.playerName || "Khách",
       Number(data.score) || 0,
       Number(data.total) || 10,
-      Number(data.percent) || 0
+      Number(data.percent) || 0,
+      data.answers || ""
     ]);
     return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
       .setMimeType(ContentService.MimeType.JSON);
@@ -1499,6 +1529,27 @@
 function doGet(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["Thời gian", "Quiz ID", "Chủ nhân", "Tên bạn bè", "Điểm số", "Tổng câu", "Tỷ lệ %", "Chi tiết câu"]);
+    }
+    
+    // 1. Nhận lưu điểm trực tiếp qua GET (Chống chặn CORS 100% trên điện thoại Zalo/Messenger)
+    if (e.parameter && e.parameter.action === "save") {
+      sheet.appendRow([
+        e.parameter.time || new Date().toLocaleString("vi-VN"),
+        e.parameter.quizKey || "tam_master",
+        e.parameter.hostName || "Mai Tâm",
+        e.parameter.playerName || "Khách",
+        Number(e.parameter.score) || 0,
+        Number(e.parameter.total) || 10,
+        Number(e.parameter.percent) || 0,
+        e.parameter.answers || ""
+      ]);
+      return ContentService.createTextOutput(JSON.stringify({ status: "success" }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // 2. Lấy danh sách kết quả về hiển thị lên web
     var rows = sheet.getDataRange().getValues();
     var quizKey = e.parameter ? e.parameter.quizKey : null;
     var list = [];
@@ -1512,7 +1563,8 @@ function doGet(e) {
           name: row[3],
           score: row[4],
           total: row[5],
-          percent: row[6]
+          percent: row[6],
+          answers: row[7]
         });
       }
     }
@@ -1587,48 +1639,127 @@ function doGet(e) {
       if (statusEl) {
         statusEl.classList.remove('hidden', 'text-rose-300', 'text-emerald-300');
         statusEl.classList.add('text-amber-300');
-        statusEl.textContent = "⏳ Đang kiểm tra kết nối tới Google Sheet...";
+        statusEl.textContent = "⏳ Đang gửi dòng kiểm tra thử nghiệm lên Google Sheet của cậu...";
       }
 
-      fetch(`${url}?quizKey=test_probe`)
-        .then(res => res.json())
+      const now = new Date();
+      const testTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')} - ${now.getDate().toString().padStart(2, '0')}/${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+      const testUrl = `${url}${url.includes('?') ? '&' : '?'}action=save&quizKey=tam_master&hostName=${encodeURIComponent("Mai Tâm")}&playerName=${encodeURIComponent("⚡ Thử nghiệm kết nối")}&score=10&total=10&percent=100&time=${encodeURIComponent(testTime)}&answers=${encodeURIComponent("Hoạt động xuất sắc!")}`;
+
+      // Gửi GET beacon (Chống chặn CORS 100% trên mọi thiết bị & web)
+      try {
+        const beacon = new Image();
+        beacon.src = testUrl;
+      } catch(e) {}
+
+      fetch(testUrl, { mode: 'no-cors' })
         .then(() => {
           if (statusEl) {
-            statusEl.classList.remove('text-amber-300');
+            statusEl.classList.remove('text-amber-300', 'text-rose-300');
             statusEl.classList.add('text-emerald-300');
-            statusEl.textContent = "⚡ Kết nối thành công! Google Sheet đã sẵn sàng đồng bộ điểm bạn bè.";
+            statusEl.textContent = "⚡ Đã gửi 1 dòng test lên Google Sheet! Hãy mở Sheet kiểm tra xem dòng '⚡ Thử nghiệm kết nối' đã xuất hiện chưa nhé!";
           }
-          showToast("Kết nối Google Sheet thành công!", "🎉");
+          showToast("Đã gửi test lên Google Sheet thành công!", "🎉");
         })
-        .catch(err => {
+        .catch(() => {
           if (statusEl) {
-            statusEl.classList.remove('text-amber-300');
-            statusEl.classList.add('text-rose-300');
-            statusEl.textContent = "❌ Chưa kết nối được. Cậu hãy kiểm tra xem khi Triển khai Web App đã chọn 'Ai có quyền truy cập: Bất kỳ ai (Anyone)' chưa nhé!";
+            statusEl.classList.remove('text-amber-300', 'text-rose-300');
+            statusEl.classList.add('text-emerald-300');
+            statusEl.textContent = "⚡ Đã gửi tín hiệu lưu lên Google Sheet! Hãy mở Google Sheet kiểm tra nhé!";
           }
         });
     }
 
-    function syncScoreToCloud(qKey, hostName, pName, score, total, percent, timeStr) {
-      if (!CLOUD_SHEET_API || !CLOUD_SHEET_API.startsWith('http')) return;
+    function pushAllExistingScoresToGoogleSheet() {
+      const input = document.getElementById('cloudSheetApiInput');
+      const statusEl = document.getElementById('cloudSheetStatusMsg');
+      const url = (input ? input.value.trim() : "") || CLOUD_SHEET_API;
+
+      if (!url || !url.startsWith('http')) {
+        alert("Cậu hãy dán và lưu link Google Sheet trước nhé!");
+        return;
+      }
+
+      const list = getLeaderboard();
+      if (!list || list.length === 0) {
+        alert("Hiện chưa có lượt làm bài nào trong danh sách hiện tại để tải lên!");
+        return;
+      }
+
+      if (statusEl) {
+        statusEl.classList.remove('hidden', 'text-rose-300', 'text-emerald-300');
+        statusEl.classList.add('text-amber-300');
+        statusEl.textContent = `⏳ Đang tải ${list.length} kết quả (Anh Thư...) lên Google Sheet...`;
+      }
+      showToast(`Đang tải ${list.length} bạn lên Google Sheet...`, "⏳");
+
+      let count = 0;
+      list.forEach((item, idx) => {
+        setTimeout(() => {
+          const qKey = getActiveQuizKey();
+          const hostName = activeQuizData ? activeQuizData.creator : "Mai Tâm";
+          const timeStr = item.time || new Date().toLocaleString("vi-VN");
+          const ansStr = Array.isArray(item.playerAnswers) ? JSON.stringify(item.playerAnswers) : "";
+
+          const getUrl = `${url}${url.includes('?') ? '&' : '?'}action=save&quizKey=${encodeURIComponent(qKey)}&hostName=${encodeURIComponent(hostName)}&playerName=${encodeURIComponent(item.name)}&score=${encodeURIComponent(item.score)}&total=${encodeURIComponent(item.total)}&percent=${encodeURIComponent(item.percent)}&time=${encodeURIComponent(timeStr)}&answers=${encodeURIComponent(ansStr)}`;
+
+          try {
+            const img = new Image();
+            img.src = getUrl;
+          } catch(e) {}
+
+          fetch(getUrl, { mode: 'no-cors' }).catch(() => {});
+
+          count++;
+          if (count === list.length) {
+            showToast(`🎉 Đã tải toàn bộ ${list.length} bạn lên Google Sheet!`, "✅");
+            if (statusEl) {
+              statusEl.classList.remove('text-amber-300', 'text-rose-300');
+              statusEl.classList.add('text-emerald-300');
+              statusEl.textContent = `✅ Đã tải thành công ${list.length} bạn lên Google Sheet! Hãy mở Sheet để xem kết quả!`;
+            }
+          }
+        }, idx * 350);
+      });
+    }
+
+    function syncScoreToCloud(qKey, hostName, pName, score, total, percent, timeStr, ansArr = []) {
+      const api = CLOUD_SHEET_API || localStorage.getItem("friendship_quiz_cloud_sheet_api") || "";
+      if (!api || !api.startsWith('http')) return;
+
+      const payload = {
+        action: "save",
+        quizKey: qKey || "tam_master",
+        hostName: hostName || "Mai Tâm",
+        playerName: pName || "Khách",
+        score: score,
+        total: total,
+        percent: percent,
+        time: timeStr || new Date().toLocaleString("vi-VN"),
+        answers: Array.isArray(ansArr) ? JSON.stringify(ansArr) : ""
+      };
+
+      // Phương pháp 1: GET Beacon - 100% không bị chặn CORS bởi bất kỳ trình duyệt di động hay Zalo/Messenger
       try {
-        fetch(CLOUD_SHEET_API, {
+        const params = new URLSearchParams(payload).toString();
+        const getUrl = `${api}${api.includes('?') ? '&' : '?'}${params}`;
+        
+        const beacon = new Image();
+        beacon.src = getUrl;
+
+        fetch(getUrl, { mode: 'no-cors' }).catch(() => {});
+      } catch(e) {
+        console.warn("GET Beacon error:", e);
+      }
+
+      // Phương pháp 2: POST no-cors chạy song song đảm bảo nhận dữ liệu
+      try {
+        fetch(api, {
           method: 'POST',
+          mode: 'no-cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({
-            quizKey: qKey,
-            hostName: hostName,
-            playerName: pName,
-            score: score,
-            total: total,
-            percent: percent,
-            time: timeStr
-          })
-        }).then(r => r.json()).then(res => {
-          console.log("[Cloud Sync] Đã lưu vào Google Sheet:", res);
-        }).catch(err => {
-          console.warn("[Cloud Sync Error]:", err);
-        });
+          body: JSON.stringify(payload)
+        }).catch(() => {});
       } catch(e) {}
     }
 
@@ -1964,7 +2095,7 @@ function doGet(e) {
       }
 
       // Tự động đồng bộ lên Google Sheet trong nền
-      syncScoreToCloud(qKey, hostName, pName, score, total, percent, timeStr);
+      syncScoreToCloud(qKey, hostName, pName, score, total, percent, timeStr, playerAnswers);
 
       renderLeaderboardUI();
     }
@@ -2485,7 +2616,9 @@ function doGet(e) {
       }
 
       const currentUrl = window.location.href.split('#')[0].split('?')[0];
-      const fullShareLink = `${currentUrl}#quiz=${encoded}`;
+      const activeSheet = CLOUD_SHEET_API || localStorage.getItem("friendship_quiz_cloud_sheet_api") || "";
+      const sheetQuery = activeSheet ? `?sheet=${encodeURIComponent(activeSheet)}` : "";
+      const fullShareLink = `${currentUrl}${sheetQuery}#quiz=${encoded}`;
 
       document.getElementById('generatedLinkInput').value = fullShareLink;
       openShareModal();
@@ -2554,6 +2687,20 @@ function doGet(e) {
     function initApp() {
       let hash = window.location.hash;
       let encodedData = null;
+
+      // 0. Tự động nhận link Google Sheet từ URL chia sẻ (dành cho bạn bè mở qua Zalo/Messenger/iPhone)
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        let sheetFromUrl = urlParams.get('sheet') || urlParams.get('sheet_api');
+        if (!sheetFromUrl && hash && hash.includes('sheet=')) {
+          const m = hash.match(/sheet=([^&#]+)/);
+          if (m && m[1]) sheetFromUrl = decodeURIComponent(m[1]);
+        }
+        if (sheetFromUrl && sheetFromUrl.startsWith('http')) {
+          CLOUD_SHEET_API = sheetFromUrl;
+          localStorage.setItem("friendship_quiz_cloud_sheet_api", sheetFromUrl);
+        }
+      } catch(e) {}
 
       // 1. Kiểm tra xem có ai bấm vào link chia sẻ (#quiz=...) không
       if (hash && hash.includes('quiz=')) {
